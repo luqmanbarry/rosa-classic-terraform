@@ -15,6 +15,7 @@ echo "##########################################################################
 echo "=================================================="
 echo "==> Set Environment Variables"
 echo "=================================================="
+export WORKING_DIRECTORY="$(pwd)"
 export TF_VAR_tfstate_s3_bucket_name="rosa-sts-tfstate"
 export TF_VAR_cluster_name="rosa-sts-100"
 export TF_VAR_business_unit="sales"
@@ -50,7 +51,7 @@ terraform init \
   -backend-config="region=${AWS_REGION}"
 terraform plan -destroy -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
-cd -
+cd "${WORKING_DIRECTORY}"
 
 echo "#########################################################################################################"
 TF_MODULE="vault-k8s-auth"
@@ -68,7 +69,7 @@ terraform init \
   -backend-config="region=${AWS_REGION}"
 terraform plan -destroy -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
-cd -
+cd "${WORKING_DIRECTORY}"
 
 echo "#########################################################################################################"
 TF_MODULE="rosa-sts"
@@ -86,7 +87,7 @@ terraform init \
   -backend-config="region=${AWS_REGION}"
 terraform plan -destroy -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
-cd -
+cd "${WORKING_DIRECTORY}"
 
 echo "#########################################################################################################"
 TF_MODULE="account-setup"
@@ -104,4 +105,4 @@ terraform init \
   -backend-config="region=${AWS_REGION}"
 terraform plan -destroy -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
-cd -
+cd "${WORKING_DIRECTORY}"

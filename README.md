@@ -73,16 +73,51 @@ Listed in their order of precedence, they work together to provision a rosa-sts 
 - [tfvars-prep](./tfvars-prep/): Combine admin, user inputs, and dynamic variables into a master tfvars file. All subsequent modules will use the master tfvars file.
 - [git-tfvars-file](./git-tfvars-file/): Commit the master tfvars file to GitHub. Feel free to change the repo location to GitLab, BitBucket...etc.
 - [rosa-sts](./rosa-sts/): Creates the rosa-sts (classic) cluster, deploys two identity providers (GitHub, GitLab), and then writes the cluster-admin credentials to Vault.
-- [kube-config](./kube-config/): Create two kubeconfig files. One for the the rosa-sts (classic) cluster and another for the ACMHUB cluster.
+- [kube-config](./kube-config/): Create two `kubeconfig` files. One for the rosa-sts (classic) cluster and another for the ACMHUB cluster.
 - [custom-ingress](./custom-ingress/): Deploys an additional IngressController.
 - [vault-k8s-auth](./vault-k8s-auth/): Deploy the vault-kubernetes-authentication backend for apps running on the cluster to be able to read Vault secrets.
-- [acmhub-registration](./acmhub-registration/): Registers the rosa-sts (classic) cluster to the ACMHUB cluster.
+- [acmhub-registration](./acmhub-registration/): Registers the rosa-sts (classic) cluster to  ACMHUB.
 
 ## Implementation
 
 ### Cluster Build
 
-Take a look at the [.ci/pipeline-create.sh](.ci/pipeline-create.sh) file.
+1. Set the [admin](./tfvars//admin//admin.tfvars) variables. These are the variables that are common across all business units. Hence, setting them once should suffice.
+2. Set the user-inputs variables. These change for each new cluster, or distinct business unit, or if you need to update existing clusters.
+
+    ```sh
+    export AWS_ACCESS_KEY_ID='<value>'
+    export AWS_SECRET_ACCESS_KEY='<value'
+    export AWS_REGION='us-east-2'
+
+    export TF_VAR_tfstate_s3_bucket_name="rosa-sts-tfstate"
+    export TF_VAR_cluster_name="rosa-sts-100"
+    export TF_VAR_business_unit="redhat"
+    export TF_VAR_cost_center="1010101010"
+    export TF_VAR_aws_region="us-east-2"
+    export TF_VAR_openshift_environment="dev"
+    export TF_VAR_base_dns_domain="non-prod.sales.example.com"
+    export TF_VAR_ocp_version="4.15.5"
+    export TF_VAR_acmhub_cluster_env="dev"
+
+    export TF_VAR_git_token="<value>"
+    export TF_VAR_vault_token="<value>"
+    export TF_VAR_acmhub_cluster_name="<value>"
+    export TF_VAR_ocm_token="<value>"
+    export TF_VAR_aws_account="<value>"
+
+    export TF_LOG="info" # debug|info|trace
+    ```
+
+3. Now run the [pipeline script](.ci/pipeline-create.sh)
+
+    From the root directory, run this script. We could translate this shell script into a proper CICD process such as Jenkins, GitHub Actions, Tekton..etc; with sensitive variables read from Vault, or some secret engine. 
+    
+    For example, AWS credentials, OCM Token, Git Token, Vault Token could be set as environment variables via a plugin.
+
+    ```sh
+    .ci/pipeline-create.sh
+    ```
 
 ### Cluster Tear Down
 
