@@ -71,7 +71,7 @@ These are the cross-module [variables](./tfvars/admin/admin.tfvars) that are com
 
 ## User input variables
 
-Variables the user provides during the execution of the pipeline.
+[Variables](.ci/vars.sh) the user provides during the execution of the pipeline.
 
 ## Derived variables
 
