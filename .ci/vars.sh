@@ -16,7 +16,7 @@ export TF_VAR_cost_center="1010101010"
 export TF_VAR_aws_region="us-east-2"
 export TF_VAR_openshift_environment="dev"
 export TF_VAR_base_dns_domain="non-prod.market-rd.example.com"
-export TF_VAR_acmhub_cluster_name="<value>"
+export TF_VAR_acmhub_cluster_name="rosa-7wc76"
 export TF_VAR_ocp_version="4.15.5"
 export TF_VAR_acmhub_cluster_env="dev"
 
