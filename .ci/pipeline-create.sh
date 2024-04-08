@@ -2,39 +2,21 @@
 
 set -e
 
-echo "=================================================="
-echo "==> AWS Authentication"
-echo "=================================================="
-export AWS_ACCESS_KEY_ID='<value>'
-export AWS_SECRET_ACCESS_KEY='<value'
-export AWS_REGION='us-east-2'
-
-aws sts get-caller-identity
-
 echo "#########################################################################################################"
 echo "=================================================="
 echo "==> Set Environment Variables"
 echo "=================================================="
-export WORKING_DIRECTORY="$(pwd)"
-export TF_VAR_tfstate_s3_bucket_name="rosa-sts-tfstate"
-export TF_VAR_cluster_name="rosa-sts-100"
-export TF_VAR_business_unit="redhat"
-export TF_VAR_cost_center="1010101010"
-export TF_VAR_aws_region="us-east-2"
-export TF_VAR_openshift_environment="dev"
-export TF_VAR_base_dns_domain="non-prod.sales.example.com"
-# export TF_VAR_base_dns_domain="w47a.p1.openshiftapps.com"
-# export TF_VAR_base_dns_domain="non-prod.sales.rosa-7wc76.2ecu.p1.openshiftapps.com"
-export TF_VAR_ocp_version="4.15.5"
-export TF_VAR_acmhub_cluster_env="dev"
 
-export TF_VAR_git_token="<value>"
-export TF_VAR_vault_token="<value>"
-export TF_VAR_acmhub_cluster_name="<value>"
-export TF_VAR_ocm_token="<value>"
-export TF_VAR_aws_account="<value>"
+. .ci/vars.sh
 
-# export TF_LOG="debug"
+echo "=================================================="
+echo "==> AWS Authentication"
+echo "=================================================="
+
+aws sts get-caller-identity
+
+exit 1
+
 echo "#########################################################################################################"
 TF_MODULE="tfstate-config"
 BACKEND_KEY="tf-state/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
@@ -48,7 +30,7 @@ cd "${TF_MODULE}"
 terraform init
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
-cd "${WORKING_DIRECTORY}"
+cd -
 
 echo "#########################################################################################################"
 TF_MODULE="account-setup"
@@ -66,7 +48,7 @@ terraform init \
   -backend-config="region=${AWS_REGION}"
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
-cd "${WORKING_DIRECTORY}"
+cd -
 
 echo "#########################################################################################################"
 TF_MODULE="tfvars-prep"
@@ -85,7 +67,7 @@ terraform init \
   -backend-config="region=${AWS_REGION}"
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
-cd "${WORKING_DIRECTORY}"
+cd -
 
 echo "#########################################################################################################"
 TF_MODULE="git-tfvars-file"
@@ -103,7 +85,7 @@ terraform init \
   -backend-config="region=${AWS_REGION}"
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
-cd "${WORKING_DIRECTORY}"
+cd -
 
 echo "#########################################################################################################"
 TF_MODULE="rosa-sts"
@@ -121,7 +103,7 @@ terraform init \
   -backend-config="region=${AWS_REGION}"
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
-cd "${WORKING_DIRECTORY}"
+cd -
 
 echo "#########################################################################################################"
 TF_MODULE="kube-config"
@@ -139,7 +121,7 @@ terraform init \
   -backend-config="region=${AWS_REGION}"
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
-cd "${WORKING_DIRECTORY}"
+cd -
 
 echo "#########################################################################################################"
 set +e # Expected to fail when adding Route53 record (invalid dns_domain)
@@ -158,7 +140,7 @@ terraform init \
   -backend-config="region=${AWS_REGION}"
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
-cd "${WORKING_DIRECTORY}"
+cd -
 
 echo "#########################################################################################################"
 TF_MODULE="vault-k8s-auth"
@@ -176,7 +158,7 @@ terraform init \
   -backend-config="region=${AWS_REGION}"
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
-cd "${WORKING_DIRECTORY}"
+cd -
 set +e
 
 echo "#########################################################################################################"
@@ -195,4 +177,4 @@ terraform init \
   -backend-config="region=${AWS_REGION}"
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
-cd "${WORKING_DIRECTORY}"
+cd -

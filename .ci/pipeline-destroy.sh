@@ -2,39 +2,19 @@
 
 # set -e
 
-echo "=================================================="
-echo "==> AWS Authentication"
-echo "=================================================="
-export AWS_ACCESS_KEY_ID='<value>'
-export AWS_SECRET_ACCESS_KEY='<value>'
-export AWS_REGION='us-east-2'
-
-aws sts get-caller-identity
-
 echo "#########################################################################################################"
 echo "=================================================="
 echo "==> Set Environment Variables"
 echo "=================================================="
-export WORKING_DIRECTORY="$(pwd)"
-export TF_VAR_tfstate_s3_bucket_name="rosa-sts-tfstate"
-export TF_VAR_cluster_name="rosa-sts-100"
-export TF_VAR_business_unit="sales"
-export TF_VAR_cost_center="1010101010"
-export TF_VAR_aws_region="us-east-2"
-export TF_VAR_openshift_environment="dev"
-export TF_VAR_base_dns_domain="non-prod.sales.example.com"
-# export TF_VAR_base_dns_domain="w47a.p1.openshiftapps.com"
-# export TF_VAR_base_dns_domain="non-prod.sales.rosa-7wc76.2ecu.p1.openshiftapps.com"
-export TF_VAR_ocp_version="4.15.5"
-export TF_VAR_acmhub_cluster_env="dev"
 
-export TF_VAR_ocm_token="<value>"
-export TF_VAR_git_token="<value"
-export TF_VAR_aws_account="<value>"
-export TF_VAR_vault_token="<value>"
-export TF_VAR_acmhub_cluster_name="<value>"
+. .ci/vars.sh
 
-# export TF_LOG="debug"
+echo "=================================================="
+echo "==> AWS Authentication"
+echo "=================================================="
+
+aws sts get-caller-identity
+
 echo "#########################################################################################################"
 TF_MODULE="custom-ingress"
 BACKEND_KEY="tf-state/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"

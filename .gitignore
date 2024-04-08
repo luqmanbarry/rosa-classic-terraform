@@ -5,3 +5,4 @@
 *.backup
 *.tfstate
 vault-
+ignore-vars.sh
