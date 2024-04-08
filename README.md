@@ -14,8 +14,8 @@
   - Add Route53 HostedZone records
 - VPC tagged with `cluster_name`
 - Private and/or Public Subnets tagged with `cluster_name`
-  - `/24` CIDR for Multi-AZ
-  - `/25` CIDR for Single-AZ
+  - `x.x.x.x/24` CIDR for Multi-AZ
+  - `x.x.x.x/25` CIDR for Single-AZ
   - tagged with `cluster_name`
 - Base DNS Domain name if you intend to deploy a custom `IngressController`
 - Additional Security Groups to apply to the cluster nodes (Master, Infra, Worker) tagged with `cluster_name`)
@@ -55,14 +55,27 @@
       }
     ```
 
-
+### Programs
+- GoLang - 1.20.x or greater
+- Terraform 1.5.x or greater
+- Openshift Client - 4.12 or greater
+- rosa cli - latest
+- 
 ## Execution Flow
 ![Rosa STS Stages](.assets/rosa-sts-modules.png)
 
 
-## Admin Variables
+## Admin variables
 
 These are the cross-module [variables](./tfvars/admin/admin.tfvars) that are common across business units.
+
+## User input variables
+
+Variables the user provides during the execution of the pipeline.
+
+## Derived variables
+
+These are the [variables](./tfvars-prep/variables.tf) that change based on user inputs.
 
 ## Terraform Modules
 
@@ -111,7 +124,7 @@ Listed in their order of precedence, they work together to provision a rosa-sts 
 
 3. Now run the [pipeline script](.ci/pipeline-create.sh)
 
-    From the root directory, run this script. We could translate this shell script into a proper CICD process such as Jenkins, GitHub Actions, Tekton..etc; with sensitive variables read from Vault, or some secret engine. 
+    From the root directory, run the script. We could translate this shell script into a proper CICD process such as Jenkins, GitHub Actions, Tekton..etc; with sensitive variables read from Vault, or some secret engine. 
     
     For example, AWS credentials, OCM Token, Git Token, Vault Token could be set as environment variables via a plugin.
 
