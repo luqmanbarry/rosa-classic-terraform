@@ -15,8 +15,6 @@ echo "=================================================="
 
 aws sts get-caller-identity
 
-exit 1
-
 echo "#########################################################################################################"
 TF_MODULE="tfstate-config"
 BACKEND_KEY="tf-state/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
