@@ -1,4 +1,4 @@
-# ROSA STS Cluster Automation
+# ROSA Classic cluster automation
 
 ## Pre-Requisites
 
