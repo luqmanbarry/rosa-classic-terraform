@@ -29,7 +29,7 @@
   - Retrieve/Read KV secrets
 - Vault Paths for retrieving the following:
   
-  - Identity Provider Details. Look at the [idp-idp_name.tf](./rosa-sts/) files for a guide.
+  - Identity Provider Details. Look at the [idp-idp_name.tf](./rosa-classic/) files for a guide.
     
     For example: GitLab IDP credentials are stored at vault path `kvv2/identity-providers/dev/gitlab` and the the secret data below.
     ```json
