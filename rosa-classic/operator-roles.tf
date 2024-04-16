@@ -5,10 +5,10 @@ data "rhcs_versions" "all" {}
 module "operator_roles" {
   depends_on  = [ rhcs_cluster_rosa_classic.rosa_sts_cluster ]
 
-  # source  = "terraform-redhat/rosa-sts/aws"
-  # version = "0.0.15"
-  source  = "terraform-redhat/terraform-rhcs-rosa-classic"
-  version = "v1.5.0"
+  source  = "terraform-redhat/rosa-sts/aws"
+  version = "0.0.15"
+  # source  = "terraform-redhat/terraform-rhcs-rosa-classic"
+  # version = "v1.5.0"
 
   create_operator_roles = true
   create_oidc_provider  = false
