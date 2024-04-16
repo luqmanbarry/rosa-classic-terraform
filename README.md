@@ -93,17 +93,17 @@ These are the [variables](./tfvars-prep/variables.tf) that change based on user 
 
 ## Terraform Modules
 
-Listed in their order of precedence, they work together to provision a rosa-sts (classic) cluster, make necessary configurations and then register the cluster to ACM for day-2 configurations and management.
+Listed in their order of precedence, they work together to provision a ROSA cluster, make necessary configurations and then register the cluster to ACM for day-2 configurations and management.
 
 - [tfstate-config](./tfstate-config/): Create an S3 bucket for remote state storage.
 - [account-setup](./account-setup/): Create necessary AWS resources such as VPC, Subnets, NAT Gateways, Account Roles. Security Groups..etc. This module is optional if you choose to implement account setup through other means.
 - [tfvars-prep](./tfvars-prep/): Combine admin, user inputs, and dynamic variables into a master tfvars file. All subsequent modules will use the master tfvars file.
 - [git-tfvars-file](./git-tfvars-file/): Commit the master tfvars file to GitHub. Feel free to change the repo location to GitLab, BitBucket...etc.
-- [rosa-sts](./rosa-sts/): Creates the rosa-sts (classic) cluster, deploys two identity providers (GitHub, GitLab), and then writes the cluster-admin credentials to Vault.
-- [kube-config](./kube-config/): Create two `kubeconfig` files. One for the rosa-sts (classic) cluster and another for the ACMHUB cluster.
+- [rosa-sts](./rosa-sts/): Creates the ROSA cluster, deploys two identity providers (GitHub, GitLab), and then writes the cluster-admin credentials to Vault.
+- [kube-config](./kube-config/): Create two `kubeconfig` files. One for the ROSA cluster and another for the ACMHUB cluster.
 - [custom-ingress](./custom-ingress/): Deploys an additional IngressController.
 - [vault-k8s-auth](./vault-k8s-auth/): Deploy the vault-kubernetes-authentication backend for apps running on the cluster to be able to read Vault secrets.
-- [acmhub-registration](./acmhub-registration/): Registers the rosa-sts (classic) cluster to  ACMHUB.
+- [acmhub-registration](./acmhub-registration/): Registers the ROSA cluster to  ACMHUB.
 
 ## Implementation
 
