@@ -8,8 +8,10 @@ module "create_account_roles" {
   
   count = var.create_account_roles ? 1 : 0
 
-  source  = "terraform-redhat/rosa-sts/aws"
-  version = "0.0.15"
+  # source  = "terraform-redhat/rosa-sts/aws"
+  # version = "0.0.15"
+  source  = "terraform-redhat/terraform-rhcs-rosa-classic/account-iam-resources"
+  version = "v1.5.0"
 
   create_account_roles  = var.create_account_roles
   create_operator_roles = false

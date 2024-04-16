@@ -21,16 +21,28 @@
 - Additional Security Groups to apply to the cluster nodes (Master, Infra, Worker) tagged with `cluster_name`)
 - ROSA OCM Token
 - Cluster Name
+- A HashiCorp Vault instance
 - Vault Token or AppRole with permission to:
   - Add a PKI engine Role
   - Request TLS certificates
   - Create KeyVault secrets
   - Retrieve/Read KV secrets
 - Vault Paths for retrieving the following:
-  - Identity Provider Details. Look at the [idp-<name>.tf](./rosa-sts/) files for examples. 4 examples are provided.
+  
+  - Identity Provider Details. Look at the [idp-idp_name.tf](./rosa-sts/) files for a guide.
+    
+    For example: GitLab IDP credentials are stored at vault path `kvv2/identity-providers/dev/gitlab` and the the secret data below.
+    ```json
+      {
+        "client_id": "<value>",
+        "client_secret": "<value>",
+        "gitlab_url": "https://gitlab.consulting.redhat.com/"
+      }
+    ```
+
   - ACMHUB cluster credentials (api_url, username, password)
 
-    For example:
+    For example: ACMHUB cluster credentials are stored at vault path `kvv2/acmhub/dev/<cluster-name>` and the secret data below.
     ```json
       {
         "api_url": "https://api.example.p1.openshiftapps.com:6443",
@@ -38,17 +50,19 @@
         "username": "<value>"
       }
     ```
+
   - OCM Token
   
-    For example:
+    For example: The OCM token is stored at vault path `kvv2/rosa/ocm-token` and the secret data below.
     ```json
       {
         "ocm_token": "<value>"
       }
     ```
+
   - Github/GitLab Authentication Token
   
-    For Example:
+    For Example: The Git token is stored at vault path `kvv2/git/github/pat` and the secret data below.
     ```json
       {
         "git_token": "<value>"
@@ -95,9 +109,12 @@ Listed in their order of precedence, they work together to provision a rosa-sts 
 
 ### Cluster Build
 
-1. Set the [admin](./tfvars//admin//admin.tfvars) variables. These are the variables that are common across all business units. Hence, setting them once should suffice.
-2. Set the user-inputs variables. These change for each new cluster, or distinct business unit, or if you need to update existing clusters.
+1. An OpenShift cluster with [ACM installed](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.10/html-single/install/index#installing-while-connected-online).
+2. A Vault instance. In this guide, [Vault is deployed](./.ci/vault-deploy.sh) in the same OpenShift cluster where ACM is running. The root token can be found in the **vault-init** `Secret` in the **vault** `Namespace`.
+3. Set the [admin](./tfvars//admin//admin.tfvars) variables. These are the variables that are common across all business units. Hence, setting them once should suffice.
+4. Set the user-inputs variables. These change for each new cluster, or distinct business unit, or if you need to update existing clusters.
 
+    
     ```sh
     export AWS_ACCESS_KEY_ID='<value>'
     export AWS_SECRET_ACCESS_KEY='<value'
@@ -122,7 +139,7 @@ Listed in their order of precedence, they work together to provision a rosa-sts 
     export TF_LOG="info" # debug|info|trace
     ```
 
-3. Now run the [pipeline script](.ci/pipeline-create.sh)
+5. Now run the [pipeline script](.ci/pipeline-create.sh)
 
     From the root directory, run the script. We could translate this shell script into a proper CICD process such as Jenkins, GitHub Actions, Tekton..etc; with sensitive variables read from Vault, or some secret engine. 
     
@@ -135,3 +152,4 @@ Listed in their order of precedence, they work together to provision a rosa-sts 
 ### Cluster Tear Down
 
 Take a look at the [.ci/pipeline-destroy.sh](.ci/pipeline-create.sh) file.
+

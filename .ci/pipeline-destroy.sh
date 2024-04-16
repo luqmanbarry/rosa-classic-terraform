@@ -9,6 +9,8 @@ echo "=================================================="
 
 . .ci/vars.sh
 
+WORKING_DIRECTORY="$(pwd)"
+
 echo "=================================================="
 echo "==> AWS Authentication"
 echo "=================================================="
@@ -52,7 +54,7 @@ terraform apply "$TF_MODULE.plan"
 cd "${WORKING_DIRECTORY}"
 
 echo "#########################################################################################################"
-TF_MODULE="rosa-sts"
+TF_MODULE="rosa-classic"
 BACKEND_KEY="tf-state/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
 BACKEND_PATH="tf-state/${TF_VAR_cluster_name}/${TF_MODULE}"
 TFVARS_FILE="../tfvars/${TF_VAR_business_unit}/${TF_VAR_aws_account}/${TF_VAR_cluster_name}.tfvars"

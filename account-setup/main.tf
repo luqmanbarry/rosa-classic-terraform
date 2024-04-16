@@ -1,5 +1,5 @@
 module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
+  source  = "terraform-redhat/terraform-rhcs-rosa-classic/vpc"
 
   name  = var.cluster_name
   cidr  = var.vpc_cidr_block
@@ -16,6 +16,7 @@ module "vpc" {
 
   tags = merge(
     {
+      Name         = var.cluster_name
       cluster_name = var.cluster_name
     },
     var.additional_tags

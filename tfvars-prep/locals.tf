@@ -36,7 +36,6 @@ locals {
   gitlab_idp_vault_secret_name                     = replace(var.gitlab_idp_vault_secret_name, "OCP_ENV", local.openshift_environment)
   aad_vault_secret_name                            = replace(var.aad_vault_secret_name, "OCP_ENV", local.openshift_environment)
   acmhub_vault_secret_path_prefix                  = replace(var.acmhub_vault_secret_path_prefix, "OCP_ENV", local.openshift_environment) # HYBRID
-  ocm_token_vault_path                             = format("%s/rosa/ocm-token", var.business_unit)
   git_token_vault_path                             = replace(var.git_token_vault_path, "OCP_ENV", local.openshift_environment)
 
   additional_tags                                  = {
@@ -101,7 +100,7 @@ locals {
       format("gitlab_idp_vault_secret_name=%q", local.gitlab_idp_vault_secret_name),
       format("aad_vault_secret_name=%q", local.aad_vault_secret_name),
       format("acmhub_vault_secret_path_prefix=%q", local.acmhub_vault_secret_path_prefix),
-      format("ocm_token_vault_path=%q", local.ocm_token_vault_path),
+      format("ocm_token_vault_path=%q", var.ocm_token_vault_path),
       format("ocm_url=%q", var.ocm_url),
       format("ocm_environment=%q", var.ocm_environment),
       format("git_token_vault_path=%q", local.git_token_vault_path),
