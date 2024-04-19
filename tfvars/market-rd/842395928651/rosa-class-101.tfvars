@@ -86,7 +86,7 @@ cost_center="1010101010"
 
 ocp_version="4.15.5"
 
-acmhub_cluster_name="unset"
+acmhub_cluster_name="noset"
 
 machine_type="m5.xlarge"
 
@@ -95,6 +95,8 @@ min_replicas=3
 max_replicas=30
 
 vpc_cidr_block="10.50.0.0/16"
+
+create_account_roles=false
 
 private_subnet_cidrs=["10.50.1.0/24","10.50.2.0/24","10.50.3.0/24"]
 

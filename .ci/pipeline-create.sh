@@ -113,6 +113,9 @@ terraform init \
   -backend-config="region=${AWS_REGION}"
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
+echo
+terraform output -json
+echo
 cd ${WORKING_DIRECTORY}
 
 # echo "#########################################################################################################"
