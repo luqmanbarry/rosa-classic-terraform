@@ -20,7 +20,7 @@ export TF_VAR_acmhub_cluster_name="noset"
 export TF_VAR_ocp_version="4.15.5"
 export TF_VAR_acmhub_cluster_env="dev"
 
-export TF_VAR_create_account_roles=true
+export TF_VAR_create_account_roles=true # Set value to false if AWS account comes with account_roles already installed.
 export TF_VAR_admin_creds_save_to_vault=false # Set value to true if you have vaut instance
 
 export TF_LOG="info"
