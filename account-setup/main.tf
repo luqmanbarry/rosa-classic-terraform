@@ -1,10 +1,15 @@
 module "vpc" {
-  source  = "terraform-redhat/terraform-rhcs-rosa-classic/vpc"
+  source  = "terraform-aws-modules/vpc/aws"
+  # source  = "terraform-redhat/terraform-rhcs-rosa-classic/vpc"
 
   name  = var.cluster_name
   cidr  = var.vpc_cidr_block
 
-  azs             = var.availability_zones
+  azs             = [
+    format("%sa", var.aws_region),
+    format("%sb", var.aws_region),
+    format("%sc", var.aws_region)
+  ]
 
   private_subnets = var.private_subnet_cidrs
   public_subnets  = var.public_subnet_cidrs

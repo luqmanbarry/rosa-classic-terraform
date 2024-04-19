@@ -141,6 +141,7 @@ variable "vpc_cidr_block" {
 variable "aws_region" {
   type    = string
   default = "us-east-2"
+  description = "The region where the ROSA cluster is created"
 }
 
 variable "private_subnet_ids" {
@@ -166,6 +167,11 @@ variable "admin_creds_password" {
 }
 
 variable "admin_creds_vault_generate" {
+  type = bool
+  default = true
+}
+
+variable "admin_creds_save_to_vault" {
   type = bool
   default = true
 }

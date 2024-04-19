@@ -31,12 +31,13 @@ data "rhcs_cluster_rosa_classic" "get_cluster" {
 ## Vault: Write Cluster Details
 resource "vault_kv_secret_v2" "rosa_cluster_details" {
   depends_on = [ data.rhcs_cluster_rosa_classic.get_cluster ]
+  count      = var.admin_creds_save_to_vault ? 1 : 0
   mount      = var.ocp_vault_secret_engine_mount
   name       = local.rosa_details_secret_name
 
   data_json = jsonencode({
-    username            = rhcs_cluster_rosa_classic.rosa_sts_cluster.admin_credentials.username
-    password            = rhcs_cluster_rosa_classic.rosa_sts_cluster.admin_credentials.password
+    username            = local.username
+    password            = local.password
     cluster_name        = data.rhcs_cluster_rosa_classic.get_cluster.name
     console_url         = data.rhcs_cluster_rosa_classic.get_cluster.console_url
     default_api_url     = data.rhcs_cluster_rosa_classic.get_cluster.api_url

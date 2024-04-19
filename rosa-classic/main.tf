@@ -56,8 +56,8 @@ resource "rhcs_cluster_rosa_classic" "rosa_sts_cluster" {
 
   lifecycle {
     precondition {
-      condition     = can(regex("^[a-z][-a-z0-9]{0,13}[a-z0-9]$", local.cluster_name))
-      error_message = "ROSA cluster name must be less than 16 characters, be lower case alphanumeric, with only hyphens."
+      condition     = can(regex("^[a-z-0-9]{6,15}$", local.cluster_name))
+      error_message = "ROSA cluster name must be between 6 and 15 characters, be lower case alphanumeric, with only hyphens."
     }
   }
 

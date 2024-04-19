@@ -2,6 +2,7 @@
 variable "aws_region" {
   type    = string
   default = "us-east-2"
+  description = "The region where the ROSA cluster is created"
 }
 
 variable "admin_creds_vault_secret_name_prefix" {
@@ -177,7 +178,7 @@ variable "aws_account" {
 
 variable "business_unit" {
   type        = string
-  description = "The region where the ROSA cluster is created"
+  description = "The business unit that owns the cluster."
   default = "sales"
 }
 
@@ -312,6 +313,11 @@ variable "public_subnet_ids" {
 }
 
 variable "admin_creds_vault_generate" {
+  type = bool
+  default = true
+}
+
+variable "admin_creds_save_to_vault" {
   type = bool
   default = true
 }

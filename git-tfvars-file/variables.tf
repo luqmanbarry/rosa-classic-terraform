@@ -12,7 +12,7 @@ variable "aws_account" {
 
 variable "business_unit" {
   type        = string
-  description = "The region where the ROSA cluster is created"
+  description = "The  business unit that owns the cluster."
   default = "sales"
 }
 
