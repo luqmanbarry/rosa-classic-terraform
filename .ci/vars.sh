@@ -10,7 +10,7 @@ export TF_VAR_ocm_token="<value>"
 export TF_VAR_git_token="<value>"
 
 export TF_VAR_tfstate_s3_bucket_name="rosa-sts-tfstate"
-export TF_VAR_cluster_name="rosa-classic-101"
+export TF_VAR_cluster_name="rosa-class-101" # Max str length 15 characters
 export TF_VAR_business_unit="market-rd"
 export TF_VAR_cost_center="1010101010"
 export TF_VAR_aws_region="us-east-1"
