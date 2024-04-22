@@ -7,7 +7,7 @@ echo "=================================================="
 echo "==> Set Environment Variables"
 echo "=================================================="
 
-. .ci/vars.sh
+. .ci/user-inputs.sh
 
 WORKING_DIRECTORY="$(pwd)"
 
