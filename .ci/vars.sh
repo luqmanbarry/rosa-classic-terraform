@@ -10,6 +10,9 @@ export TF_VAR_ocm_token="<value>"
 export TF_VAR_git_token="<value>"
 
 export TF_VAR_tfstate_s3_bucket_name="rosa-sts-tfstate"
+export TF_VAR_vpc_cidr_block="10.60.0.0/16"
+export TF_VAR_private_subnet_cidrs='["10.60.1.0/24", "10.60.2.0/24", "10.60.3.0/24"]'
+export TF_VAR_public_subnet_cidrs='["10.60.101.0/24", "10.60.102.0/24", "10.60.103.0/24"]'
 export TF_VAR_cluster_name="rosa-class-101" # Max str length 15 characters
 export TF_VAR_business_unit="market-rd"
 export TF_VAR_cost_center="1010101010"

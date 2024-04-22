@@ -19,7 +19,7 @@
   - tagged with `cluster_name`
 - Base DNS Domain name if you intend to deploy a custom `IngressController`
 - Additional Security Groups to apply to the cluster nodes (Master, Infra, Worker) tagged with `cluster_name`)
-- ROSA OCM Token
+- ROSA [OCM Token](https://console.redhat.com/openshift/token/rosa/show)
 - Cluster Name
 - A HashiCorp Vault instance
 - Vault Token or AppRole with permission to:
@@ -114,7 +114,7 @@ Listed in their order of precedence, they work together to provision a ROSA clus
 1. Have an OpenShift cluster with [ACM Deployed](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.10/html-single/install/index#installing-while-connected-online). We'll use this as the HUB cluster.
 2. A Vault instance. In this guide, [Vault is deployed](./.ci/vault-deploy.sh) in the same OpenShift cluster where ACM is running. The root token can be found in the **vault-init** `Secret` in the **vault** `Namespace`.
 3. Set the [admin](./tfvars//admin//admin.tfvars) variables. These are the variables that are common across all business units. Hence, setting them once should suffice.
-4. Set the user-inputs variables. These change for each new cluster, or distinct business unit, or if you need to update existing clusters.
+4. Set the [user-inputs](.ci/vars.sh) variables. These change for each new cluster, or distinct business unit, or if you need to update existing clusters.
 
     
     ```sh
