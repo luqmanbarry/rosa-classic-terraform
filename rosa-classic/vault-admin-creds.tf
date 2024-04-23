@@ -15,7 +15,7 @@ resource "random_password" "password" {
   min_numeric       = 10
   special           = true
   min_special       = 5
-  override_special  = "-_()[]<>=?+"
+  override_special  = "-_()[]=?+"
 }
 
 resource "time_sleep" "wait_for_api_url" {

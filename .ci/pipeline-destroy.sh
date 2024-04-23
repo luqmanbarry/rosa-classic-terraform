@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# set -e
+set +e
 
 echo "#########################################################################################################"
 echo "=================================================="
@@ -27,6 +27,7 @@ echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
 cd "${TF_MODULE}"
+terraform workspace new ${TF_WORKSPACE} || echo "Workspace ${TF_WORKSPACE} already exists or cannot be created"
 terraform init \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
   -backend-config="key=${BACKEND_KEY}" \
@@ -45,6 +46,7 @@ echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
 cd "${TF_MODULE}"
+terraform workspace new ${TF_WORKSPACE} || echo "Workspace ${TF_WORKSPACE} already exists or cannot be created"
 terraform init \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
   -backend-config="key=${BACKEND_KEY}" \
@@ -63,6 +65,7 @@ echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
 cd "${TF_MODULE}"
+terraform workspace new ${TF_WORKSPACE} || echo "Workspace ${TF_WORKSPACE} already exists or cannot be created"
 terraform init \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
   -backend-config="key=${BACKEND_KEY}" \
@@ -81,6 +84,7 @@ echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
 cd "${TF_MODULE}"
+terraform workspace new ${TF_WORKSPACE} || echo "Workspace ${TF_WORKSPACE} already exists or cannot be created"
 terraform init \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
   -backend-config="key=${BACKEND_KEY}" \

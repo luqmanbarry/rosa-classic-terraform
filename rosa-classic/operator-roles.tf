@@ -1,14 +1,11 @@
 data "rhcs_policies" "all_policies" {}
 
-data "rhcs_versions" "all" {}
-
-module "operator_roles" {
+module "rosa-classic_operator-roles" {
   depends_on  = [ rhcs_cluster_rosa_classic.rosa_sts_cluster ]
 
+  ## OLD CONFIGS
   source  = "terraform-redhat/rosa-sts/aws"
   version = "0.0.15"
-  # source  = "terraform-redhat/terraform-rhcs-rosa-classic"
-  # version = "v1.5.0"
 
   create_operator_roles = true
   create_oidc_provider  = false
@@ -21,10 +18,17 @@ module "operator_roles" {
   operator_roles_properties   = data.rhcs_rosa_operator_roles.operator_roles.operator_iam_roles
   tags                        = var.additional_tags
   path                        = local.path
+
+  ## NEW CONFIGS
+  # source  = "terraform-redhat/rosa-classic/rhcs/modules/operator-roles"
+  # oidc_provider_url           = rhcs_rosa_oidc_config.oidc_config.oidc_endpoint_url
+  # operator_role_prefix        = local.operator_role_prefix
+  # path                        = local.path
+  # tags                        = var.additional_tags
 }
 
 resource "time_sleep" "wait_for_operator_roles" {
-  depends_on = [module.operator_roles]
+  depends_on = [module.rosa-classic_operator-roles]
 
   create_duration = "15s"
 }

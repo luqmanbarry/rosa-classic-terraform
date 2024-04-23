@@ -4,14 +4,13 @@ data "rhcs_versions" "all" {
 
 data "rhcs_policies" "all_policies" {}
 
-module "create_account_roles" {
+module "rosa-classic_account-iam-resources" {
   
   count = var.create_account_roles ? 1 : 0
 
+  ## OLD CONFIGS
   source  = "terraform-redhat/rosa-sts/aws"
   version = "0.0.15"
-  # source  = "terraform-redhat/terraform-rhcs-rosa-classic/account-iam-resources"
-  # version = "v1.5.0"
 
   create_account_roles  = var.create_account_roles
   create_operator_roles = false
@@ -23,10 +22,17 @@ module "create_account_roles" {
   all_versions           = data.rhcs_versions.all[0]
   operator_role_policies = data.rhcs_policies.all_policies.operator_role_policies
   tags                   = var.additional_tags
+
+  ## NEW CONFIGS
+  # source  = "terraform-redhat/rosa-classic/rhcs/modules/account-iam-resources"
+  # account_role_prefix    = var.account_role_prefix
+  # openshift_version      = regex("^[0-9]+\\.[0-9]+", var.ocp_version)
+  # path                   = local.path
+  # tags                   = var.additional_tags
 }
 
 resource "time_sleep" "wait_10_seconds" {
-  depends_on = [ module.create_account_roles ]
+  depends_on = [ module.rosa-classic_account-iam-resources ]
 
   create_duration = "10s"
 }

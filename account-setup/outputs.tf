@@ -1,5 +1,5 @@
-output "vpc_arn" {
-  value = module.vpc.vpc_arn
+output "vpc_id" {
+  value = local.vpc_id
 }
 
 output "additional_security_group" {

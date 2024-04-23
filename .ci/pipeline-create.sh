@@ -27,7 +27,7 @@ echo "=================================================="
 echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
-if !(aws s3api head-bucket --bucket "$TF_VAR_tfstate_s3_bucket_name" 2>/dev/null);
+if !(aws s3api head-bucket --bucket "${TF_VAR_tfstate_s3_bucket_name}" 2>/dev/null);
 then
   echo "===> TFState bucket does not exists. Creating..."
   cd "${TF_MODULE}"
@@ -49,8 +49,8 @@ echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
 cd "${TF_MODULE}"
+terraform workspace new ${TF_WORKSPACE} || echo "Workspace ${TF_WORKSPACE} already exists or cannot be created"
 terraform init \
-  -reconfigure \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
   -backend-config="key=${BACKEND_KEY}" \
   -backend-config="region=${AWS_REGION}"
@@ -68,8 +68,8 @@ echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
 cd "${TF_MODULE}"
+terraform workspace new ${TF_WORKSPACE} || echo "Workspace ${TF_WORKSPACE} already exists or cannot be created"
 terraform init \
-  -reconfigure \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
   -backend-config="key=${BACKEND_KEY}" \
   -backend-config="region=${AWS_REGION}"
@@ -87,8 +87,8 @@ echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
 cd "${TF_MODULE}"
+terraform workspace new ${TF_WORKSPACE} || echo "Workspace ${TF_WORKSPACE} already exists or cannot be created"
 terraform init \
-  -reconfigure \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
   -backend-config="key=${BACKEND_KEY}" \
   -backend-config="region=${AWS_REGION}"
@@ -106,8 +106,8 @@ echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
 cd "${TF_MODULE}"
+terraform workspace new ${TF_WORKSPACE} || echo "Workspace ${TF_WORKSPACE} already exists or cannot be created"
 terraform init \
-  -reconfigure \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
   -backend-config="key=${BACKEND_KEY}" \
   -backend-config="region=${AWS_REGION}"
@@ -128,8 +128,8 @@ cd ${WORKING_DIRECTORY}
 # echo "=================================================="
 
 # cd "${TF_MODULE}"
+# terraform workspace new ${TF_WORKSPACE} || echo "Workspace ${TF_WORKSPACE} already exists or cannot be created"
 # terraform init \
-#   -reconfigure \
 #   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
 #   -backend-config="key=${BACKEND_KEY}" \
 #   -backend-config="region=${AWS_REGION}"
@@ -148,6 +148,7 @@ cd ${WORKING_DIRECTORY}
 # echo "=================================================="
 
 # cd "${TF_MODULE}"
+# terraform workspace new ${TF_WORKSPACE} || echo "Workspace ${TF_WORKSPACE} already exists or cannot be created"
 # terraform init \
 #   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
 #   -backend-config="key=${BACKEND_KEY}" \
@@ -166,6 +167,7 @@ cd ${WORKING_DIRECTORY}
 # echo "=================================================="
 
 # cd "${TF_MODULE}"
+# terraform workspace new ${TF_WORKSPACE} || echo "Workspace ${TF_WORKSPACE} already exists or cannot be created"
 # terraform init \
 #   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
 #   -backend-config="key=${BACKEND_KEY}" \
@@ -185,6 +187,7 @@ cd ${WORKING_DIRECTORY}
 # echo "=================================================="
 
 # cd "${TF_MODULE}"
+# terraform workspace new ${TF_WORKSPACE} || echo "Workspace ${TF_WORKSPACE} already exists or cannot be created"
 # terraform init \
 #   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
 #   -backend-config="key=${BACKEND_KEY}" \

@@ -1,5 +1,4 @@
 private_cluster               = false # Whether to deploy PrivateLink
-tfstate_s3_bucket_name        = "rosa-sts-tfstate"
 #================ ACM HUB ==============================================================
 acmhub_api_server       = ""
 acmhub_username         = "" # Ignore if creds pulled form Vault
