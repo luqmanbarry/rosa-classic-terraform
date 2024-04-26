@@ -1,13 +1,13 @@
-export AWS_ACCESS_KEY_ID='<redacted-aws-access-key-id>'
-export AWS_SECRET_ACCESS_KEY='<redacted-aws-secret-access-key>'
+export AWS_ACCESS_KEY_ID='<value>'
+export AWS_SECRET_ACCESS_KEY='<value>'
 export AWS_REGION='us-east-1'
-export TF_VAR_aws_account="846429350492"
+export TF_VAR_aws_account="<value>"
 # Could gnerated by the user
 export TF_VAR_vault_token="<value>"
 # Vault Path: kvv2/rosa/ocm-token
-export TF_VAR_ocm_token="<redacted-jwt>"
+export TF_VAR_ocm_token="<value>"
 # Vault Path: kvv2/git/github/pat
-export TF_VAR_git_token="<redacted-github-pat>"
+export TF_VAR_git_token="<value>"
 
 export TF_VAR_tfstate_s3_bucket_name="rosa-classic-tfstates"
 export TF_VAR_vpc_cidr_block="10.50.0.0/16"
