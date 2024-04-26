@@ -41,3 +41,15 @@ resource "aws_security_group_rule" "allow_ingress_from_cicd_instance" {
   security_group_id = aws_security_group.ocp_cluster_sg_config.id
   description       = "Allow inbound from CICD/Bastion hosts"
 }
+
+## AWS: Allow Outbound to everything anywhere
+resource "aws_security_group_rule" "allow_outbound_everything_anywhere" {
+  depends_on = [ aws_security_group.ocp_cluster_sg_config ]
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.ocp_cluster_sg_config.id
+  description       = "Allow outbound traffic - everything everywhere"
+}
