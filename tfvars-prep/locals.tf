@@ -86,6 +86,7 @@ locals {
       format("machine_type=%q", local.machine_type),
       format("min_replicas=%s", local.min_replicas),
       format("max_replicas=%s", local.max_replicas),
+      format("tfstate_s3_bucket_name=%q", var.tfstate_s3_bucket_name),
       format("vpc_cidr_block=%q", local.vpc_cidr_block), 
       format("create_account_roles=%s", var.create_account_roles),
       format("private_subnet_cidrs=%v", toset(var.private_subnet_cidrs)),

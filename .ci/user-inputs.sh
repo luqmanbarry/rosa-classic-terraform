@@ -26,6 +26,8 @@ export TF_VAR_base_dns_domain="non-prod.${TF_VAR_business_unit}.example.com"
 
 export TF_VAR_cluster_name="classic-100" # Max str length 15 characters
 export TF_WORKSPACE="${TF_VAR_openshift_environment}-${TF_VAR_cluster_name}"
+export TF_VAR_min_replicas=3
+export TF_VAR_max_replicas=30
 
 export TF_VAR_acmhub_cluster_name="noset"
 export TF_VAR_ocp_version="4.15.8"

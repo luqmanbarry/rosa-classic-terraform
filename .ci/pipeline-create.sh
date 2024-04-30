@@ -114,7 +114,7 @@ terraform init \
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
 echo
-terraform output -json | tee 
+terraform output -json | tee "$TF_MODULE.out"
 echo
 cd ${WORKING_DIRECTORY}
 
