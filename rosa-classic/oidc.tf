@@ -1,29 +1,18 @@
-## CREATE OIDC CONFIG
-resource "rhcs_rosa_oidc_config" "oidc_config" {
-  managed = var.managed_oidc
-}
+module "rosa-classic_oidc-config-and-provider" {
+  source  = "terraform-redhat/rosa-classic/rhcs//modules/oidc-config-and-provider"
+  # version = "1.5.0"
 
-data "rhcs_rosa_operator_roles" "operator_roles" {
-  operator_role_prefix = local.operator_role_prefix
-  account_role_prefix  = var.account_role_prefix
-}
-
-module "oidc_provider" {
-  source  = "terraform-redhat/rosa-sts/aws"
-  version = "0.0.15"
-
-  create_operator_roles = false
-  create_oidc_provider  = true
-
-  cluster_id = ""
-  
-  rh_oidc_provider_thumbprint = rhcs_rosa_oidc_config.oidc_config.thumbprint
-  rh_oidc_provider_url        = rhcs_rosa_oidc_config.oidc_config.oidc_endpoint_url
-  tags                        = var.additional_tags
-  path                        = var.path
+  installer_role_arn          = var.managed_oidc ? null : data.aws_caller_identity.current.arn
+  managed                     = var.managed_oidc
+  tags = merge(
+    {
+      cluster_name = var.cluster_name
+    },
+    var.additional_tags
+  )
 }
 
 resource "time_sleep" "wait_for_oidc" {
-  depends_on      = [ module.oidc_provider ]
+  depends_on      = [ module.rosa-classic_oidc-config-and-provider ]
   create_duration = "15s"
 }

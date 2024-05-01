@@ -1,5 +1,3 @@
-
-data "aws_availability_zones" "available" {}
 data "aws_caller_identity" "current" {}
 
 resource "random_string" "random_name" {
@@ -61,7 +59,7 @@ resource "rhcs_cluster_rosa_classic" "rosa_sts_cluster" {
     }
   }
 
-  tags                 = var.additional_tags
+  tags = var.additional_tags
 }
 
 resource "rhcs_cluster_wait" "wait_for_cluster_build" {

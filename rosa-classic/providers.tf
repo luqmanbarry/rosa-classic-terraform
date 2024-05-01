@@ -18,7 +18,7 @@ terraform {
   }
 }
 
-# Export token using the RHCS_TOKEN environment variable
+# Export token using the RHCS_TOKEN or TF_VAR_ocm_token environment variable
 provider "rhcs" {
   token = var.ocm_token
   url   = var.ocm_url

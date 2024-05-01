@@ -1,19 +1,22 @@
 locals {
   ldap_root_ca_keyname = "ca_crt"
 
+  account_role_prefix = var.cluster_name
+  operator_role_prefix = var.cluster_name
+
   path = coalesce(var.path, "/")
   custom_dns_domain = format("apps.%s.%s.%s.%s", var.business_unit, var.cluster_name, var.openshift_environment, var.base_dns_domain)
   sts_roles = {
-    role_arn         = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role${local.path}${var.account_role_prefix}-Installer-Role",
-    support_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role${local.path}${var.account_role_prefix}-Support-Role",
+    role_arn         = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role${local.path}${local.account_role_prefix}-Installer-Role",
+    support_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role${local.path}${local.account_role_prefix}-Support-Role",
     instance_iam_roles = {
-      master_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role${local.path}${var.account_role_prefix}-ControlPlane-Role",
-      worker_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role${local.path}${var.account_role_prefix}-Worker-Role"
+      master_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role${local.path}${local.account_role_prefix}-ControlPlane-Role",
+      worker_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role${local.path}${local.account_role_prefix}-Worker-Role"
     },
-    operator_role_prefix = format("rosa-%s", local.cluster_name),
-    oidc_config_id       = rhcs_rosa_oidc_config.oidc_config.id
+    operator_role_prefix = local.operator_role_prefix,
+    oidc_config_id       = module.rosa-classic_oidc-config-and-provider.oidc_config_id
   }
-  operator_role_prefix = format("rosa-%s", local.cluster_name)
+  
   worker_node_replicas  = var.autoscaling_enabled ?  null : var.worker_node_replicas
   cluster_name = coalesce(var.cluster_name, "rosa-${random_string.random_name.result}")
 

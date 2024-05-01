@@ -1,30 +1,37 @@
-data "rhcs_policies" "all_policies" {}
+module "rosa-classic_operator-policies" {
+  source  = "terraform-redhat/rosa-classic/rhcs//modules/operator-policies"
+  
+  account_role_prefix     = local.account_role_prefix
+  openshift_version       = var.ocp_version
+  path                    = local.path
+
+  tags = merge(
+    {
+      cluster_name = var.cluster_name
+    },
+    var.additional_tags
+  )
+}
 
 module "rosa-classic_operator-roles" {
-  depends_on  = [ rhcs_cluster_rosa_classic.rosa_sts_cluster ]
+  depends_on  = [ 
+    module.rosa-classic_operator-policies,
+    rhcs_cluster_rosa_classic.rosa_sts_cluster 
+  ]
+  source  = "terraform-redhat/rosa-classic/rhcs//modules/operator-roles"
+  # version = "1.5.0"
 
-  ## OLD CONFIGS
-  source  = "terraform-redhat/rosa-sts/aws"
-  version = "0.0.15"
-
-  create_operator_roles = true
-  create_oidc_provider  = false
-
-  rh_oidc_provider_thumbprint = rhcs_rosa_oidc_config.oidc_config.thumbprint
-  rh_oidc_provider_url        = rhcs_rosa_oidc_config.oidc_config.oidc_endpoint_url
-  rosa_openshift_version      = regex("^[0-9]+\\.[0-9]+", var.ocp_version)
-  cluster_id                  = ""
-  operator_role_policies      = data.rhcs_policies.all_policies.operator_role_policies 
-  operator_roles_properties   = data.rhcs_rosa_operator_roles.operator_roles.operator_iam_roles
-  tags                        = var.additional_tags
+  account_role_prefix         = local.account_role_prefix
+  oidc_endpoint_url           = module.rosa-classic_oidc-config-and-provider.oidc_endpoint_url
+  operator_role_prefix        = local.operator_role_prefix
   path                        = local.path
 
-  ## NEW CONFIGS
-  # source  = "terraform-redhat/rosa-classic/rhcs/modules/operator-roles"
-  # oidc_provider_url           = rhcs_rosa_oidc_config.oidc_config.oidc_endpoint_url
-  # operator_role_prefix        = local.operator_role_prefix
-  # path                        = local.path
-  # tags                        = var.additional_tags
+  tags = merge(
+    {
+      cluster_name = var.cluster_name
+    },
+    var.additional_tags
+  )
 }
 
 resource "time_sleep" "wait_for_operator_roles" {

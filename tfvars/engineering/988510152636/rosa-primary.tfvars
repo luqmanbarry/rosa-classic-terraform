@@ -1,3 +1,5 @@
+#========================= BEGIN: STATIC VARIABLES ===================================
+
 private_cluster               = false # Whether to deploy PrivateLink
 #================ ACM HUB ==============================================================
 acmhub_api_server       = ""
@@ -32,7 +34,7 @@ proxy           = {
 #================ VAULT SECRETS/CERTS =============================================
 vault_login_path                            = "auth/approle/login"
 vault_login_approle_role_id                 = "changeme"
-vault_addr                                  = "https://vault.apps.classic-101.9kvd.p1.openshiftapps.com"
+vault_addr                                  = "https://vault.apps.rosa-7wc76.2ecu.p1.openshiftapps.com"
 vault_pki_path                              = "pki"
 vault_pki_ttl                               = "63070000" # should be 2 years
 #================ KUBERNETES VAULT AUTH BACKEND ===================================
@@ -57,3 +59,96 @@ ocp_sg_inbound_to_port       = 32900
 cicd_instance_cidr           = "10.254.0.0/16" # IP range of whereever automation scripts are running from
 cicd_sg_inbound_from_port    = 30000
 cicd_sg_inbound_to_port      = 32900
+
+
+#========================= END: STATIC VARIABLES =====================================
+
+#%%%%%%%%%%%%%%%%%%%%%%%%% BEGIN: DYNAMIC VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+business_unit="engineering"
+
+aws_account="988510152636"
+
+vpc_name="rosa-primary"
+
+vpc_id="vpc-08b2ebe49e6cade97"
+
+single_nat_gateway=true
+
+aws_region="us-east-1"
+
+openshift_environment="dev"
+
+cluster_name="rosa-primary"
+
+cost_center="1010101010"
+
+ocp_version="4.15.9"
+
+acmhub_cluster_name="noset"
+
+machine_type="m5.xlarge"
+
+min_replicas=3
+
+max_replicas=30
+
+vpc_cidr_block="10.60.0.0/16"
+
+create_account_roles=true
+
+private_subnet_cidrs=["10.60.1.0/24","10.60.2.0/24","10.60.3.0/24"]
+
+private_subnet_ids=["subnet-067ef2032e396f627","subnet-0a65eac69c1cc7f9e","subnet-0d918020a33652f22"]
+
+public_subnet_cidrs=["10.60.101.0/24","10.60.102.0/24","10.60.103.0/24"]
+
+public_subnet_ids=["subnet-0415a0d78c73d2826","subnet-062212f5fa1059c18","subnet-0692cfbd3d0083556"]
+
+availability_zones=["us-east-1a","us-east-1b","us-east-1c"]
+
+hosted_zone_id="Z04534922UOV45L7ZE0J3"
+
+base_dns_domain="non-prod.engineering.example.com"
+
+aws_additional_compute_security_group_ids=["sg-09785ee1da60352b2"]
+
+aws_additional_control_plane_security_group_ids=["sg-09785ee1da60352b2"]
+
+aws_additional_infra_security_group_ids=["sg-09785ee1da60352b2"]
+
+acmhub_cluster_env="dev"
+
+admin_creds_vault_secret_name_prefix="rosa/cluster-admins/dev"
+
+admin_creds_save_to_vault=false
+
+ldap_vault_secret_name="identity-providers/dev/ldap"
+
+github_idp_vault_secret_name="identity-providers/dev/github"
+
+gitlab_idp_vault_secret_name="identity-providers/dev/gitlab"
+
+aad_vault_secret_name="identity-providers/dev/aad"
+
+acmhub_vault_secret_path_prefix="acmhub/dev"
+
+ocm_token_vault_path="rosa/ocm-token"
+
+ocm_url="https://api.openshift.com"
+
+ocm_environment="production"
+
+git_token_vault_path="git/github/pat"
+
+git_ci_job_number="123"
+
+git_ci_job_identifier="https://cicd.corporate.com/path/to/job/job-123"
+
+git_action_taken="ROSAClusterCreate"
+
+additional_tags={"business_unit"="engineering","cost_center"="1010101010","deployer_role"="ManagedOpenShift-Installer-Role","red-hat-clustertype"="rosa","team-maintainer"="platform-ops"}
+
+default_mp_labels={"business_unit"="engineering","cost_center"="1010101010","red-hat-clustertype"="rosa","team-maintainer"="platform-ops"}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%% END: DYNAMIC VARIABLES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

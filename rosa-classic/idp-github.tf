@@ -1,5 +1,5 @@
 ###################################
-##  OpenID Identity Provider  ###
+##  GitHub Provider  ###
 ###################################
 
 ## GET GitHub {client_id, client_secret, organizations} FROM VAULT

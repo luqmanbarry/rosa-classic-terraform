@@ -4,10 +4,13 @@ resource "aws_security_group" "ocp_cluster_sg_config" {
   description = "Security group to allow inbound traffic from OpenShift and CICD/Bastion hosts"
   vpc_id = local.vpc_id
 
-  tags = {
+  tags = merge(
+    {
       cluster_name = var.cluster_name
       Name         = format("%s-%s-%s", var.business_unit, var.openshift_environment, var.cluster_name)
-    }
+    },
+    var.additional_tags
+  )
 
   # lifecycle {
   #   create_before_destroy = true

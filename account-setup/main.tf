@@ -1,33 +1,15 @@
 module "rosa-classic_vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  # source  = "terraform-redhat/rosa-classic/rhcs//modules/vpc"
+  source  = "terraform-redhat/rosa-classic/rhcs//modules/vpc"
   # version = "1.5.0"
-
-  # "terraform-aws-modules/vpc/aws" properties
-  name          = var.cluster_name
-  cidr          = var.vpc_cidr_block
-  azs             = [
+  
+  name_prefix         = var.cluster_name
+  vpc_cidr            = var.vpc_cidr_block
+  availability_zones  = [
     format("%sa", var.aws_region),
     format("%sb", var.aws_region),
     format("%sc", var.aws_region)
   ]
-  private_subnets = var.private_subnet_cidrs
-  public_subnets  = var.public_subnet_cidrs
-  enable_nat_gateway   = true
-  single_nat_gateway   = var.single_nat_gateway
-  enable_dns_hostnames = true
-  enable_dns_support   = true
 
-  # "terraform-redhat/rosa-classic/rhcs//modules/vpc" propeteis  
-  # name_prefix         = var.cluster_name
-  # vpc_cidr            = var.vpc_cidr_block
-  # availability_zones  = [
-  #   format("%sa", var.aws_region),
-  #   format("%sb", var.aws_region),
-  #   format("%sc", var.aws_region)
-  # ]
-
-  # Common property between the two modules
   tags = merge(
     {
       Name         = var.cluster_name

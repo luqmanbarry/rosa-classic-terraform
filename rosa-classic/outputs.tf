@@ -1,9 +1,5 @@
-output "oidc_thumbprint" {
-  value = rhcs_rosa_oidc_config.oidc_config.oidc_endpoint_url
-}
-
 output "oidc_endpoint_url" {
-  value = rhcs_rosa_oidc_config.oidc_config.oidc_endpoint_url
+  value = module.rosa-classic_oidc-config-and-provider.oidc_endpoint_url
 }
 
 output "cluster_id" {
