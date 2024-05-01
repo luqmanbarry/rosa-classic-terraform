@@ -1,14 +1,10 @@
 module "rosa-classic_vpc" {
   source  = "terraform-redhat/rosa-classic/rhcs//modules/vpc"
   # version = "1.5.0"
-  
-  name_prefix         = var.cluster_name
-  vpc_cidr            = var.vpc_cidr_block
-  availability_zones  = [
-    format("%sa", var.aws_region),
-    format("%sb", var.aws_region),
-    format("%sc", var.aws_region)
-  ]
+
+  name_prefix                = var.cluster_name
+  vpc_cidr                   = var.vpc_cidr_block
+  availability_zones_count	 = 3
 
   tags = merge(
     {
