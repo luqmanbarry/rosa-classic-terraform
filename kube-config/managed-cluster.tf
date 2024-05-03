@@ -21,7 +21,7 @@ resource "null_resource" "set_managed_cluster_kubeconfig" {
   # Login to the kube cluster - New kubeconfig file will be created
   provisioner "local-exec" {
     interpreter = [ "/bin/bash", "-c" ]
-    command = "oc login -u $USERNAME -p $PASSWORD $API_SERVER --insecure-skip-tls-verify"
+    command = "oc login -u \"$USERNAME\" -p \"$PASSWORD\" \"$API_SERVER\" --insecure-skip-tls-verify"
 
     environment = {
       USERNAME   = local.managed_cluster_username

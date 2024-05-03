@@ -23,7 +23,7 @@ export TF_VAR_cluster_name="classic-102" # Max str length 15 characters
 export TF_ENV="${TF_VAR_openshift_environment}-${TF_VAR_cluster_name}"
 
 export TF_VAR_acmhub_cluster_name="classic-102"
-export TF_VAR_ocp_version="4.15.9"
+export TF_VAR_ocp_version="4.15.10"
 export TF_VAR_acmhub_cluster_env="dev"
 
 export TF_VAR_create_account_roles=true # Set value to false if account_roles already exists.
