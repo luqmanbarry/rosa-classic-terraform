@@ -13,8 +13,8 @@ acmhub_kubeconfig_filename          = "/Users/luqman/.acmhub-kube/config" # Use 
 managed_oidc                  = true
 worker_node_replicas          = 3
 autoscaling_enabled           = true
-custom_ingress_domain_prefix = "shard1"
-custom_ingress_name          = "ingress-shard1"
+custom_ingress_domain_prefix = "ingress1"
+custom_ingress_name          = "ingress1"
 custom_ingress_machine_type  = "m5.xlarge"
 custom_ingress_machine_pool_min_replicas = 3
 custom_ingress_machine_pool_max_replicas = 15
@@ -82,7 +82,7 @@ cluster_name="classic-102"
 
 cost_center="1010101010"
 
-ocp_version="4.15.9"
+ocp_version="4.15.10"
 
 acmhub_cluster_name="classic-102"
 

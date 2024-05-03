@@ -22,7 +22,10 @@ export TF_VAR_base_dns_domain="non-prod.${TF_VAR_business_unit}.example.com"
 export TF_VAR_cluster_name="classic-102" # Max str length 15 characters
 export TF_ENV="${TF_VAR_openshift_environment}-${TF_VAR_cluster_name}"
 
-export TF_VAR_acmhub_cluster_name="classic-102"
+export TF_VAR_min_replicas=3
+export TF_VAR_max_replicas=30
+
+export TF_VAR_acmhub_cluster_name="<value>"
 export TF_VAR_ocp_version="4.15.10"
 export TF_VAR_acmhub_cluster_env="dev"
 
@@ -31,6 +34,6 @@ export TF_VAR_create_account_roles=true # Set value to false if account_roles al
 export TF_VAR_admin_creds_save_to_vault=true # Set value to true if you have vaut instance
 # VAULT INFO MUST BE SET IF admin_creds_save_to_vault=true
 export TF_VAR_vault_token="<redacted-vault-token>" # Could gnerated by the user
-export TF_VAR_vault_addr="https://vault.apps.classic-102.12345.p1.openshiftapps.com" # Change this to your vault address - Use .ci/vault-deploy.sh to deploy one inside OCP
+export TF_VAR_vault_addr="https://vault.apps.classic-102.abc12.p1.openshiftapps.com" # Change this to your vault address - Use .ci/vault-deploy.sh to deploy one inside OCP
 
 export TF_LOG="info"

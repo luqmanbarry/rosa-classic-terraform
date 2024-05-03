@@ -11,6 +11,7 @@ data "vault_kv_secret_v2" "rosa_cluster_details" {
 ## ROSA: Deploy MachineConfigPool
 resource "rhcs_machine_pool" "ing_shard1_machine_pool" {
   depends_on = [ data.vault_kv_secret_v2.rosa_cluster_details ]
+  
   cluster                           = lookup(data.vault_kv_secret_v2.rosa_cluster_details.data, "cluster_id")
   name                              = var.custom_ingress_name
   machine_type                      = var.custom_ingress_machine_type
@@ -40,6 +41,8 @@ resource "time_sleep" "wait_for_machine_pool" {
 ## ROSA: Get details of default IngressController
 data "kubernetes_resource" "default_ingress" {
   depends_on = [ time_sleep.wait_for_machine_pool ]
+  provider    = kubernetes.managed_cluster
+
   api_version        = "operator.openshift.io/v1"
   kind               = "IngressController" 
 
@@ -79,6 +82,7 @@ resource "null_resource" "default_ingress_patch" {
 ## ROSA: Create TLS secret for the second IngressController domain
 resource "kubernetes_secret" "custom-ingress-certs-secret" {
   depends_on = [ null_resource.default_ingress_patch ]
+  provider    = kubernetes.managed_cluster
   
   metadata         {
     name          = local.ingress_name
@@ -101,6 +105,7 @@ resource "kubernetes_secret" "custom-ingress-certs-secret" {
 resource "kubernetes_manifest" "custom-ingress" {
 
   depends_on = [ kubernetes_secret.custom-ingress-certs-secret ]
+  provider    = kubernetes.managed_cluster
 
   manifest   = {
     "apiVersion"        = "operator.openshift.io/v1"
@@ -226,6 +231,8 @@ resource "kubernetes_manifest" "custom-ingress" {
 ## ROSA: Patch the LB service to specify subnets lists
 resource "kubernetes_annotations" "set_elb_subnets" {
   depends_on = [ kubernetes_manifest.custom-ingress ]
+  provider    = kubernetes.managed_cluster
+
   api_version = "v1"
   kind = "Service"
   metadata {
@@ -246,6 +253,8 @@ resource "time_sleep" "wait_for_for_elb" {
 ## ROSA: Get the NLB name/hostname
 data "kubernetes_resource" "custom-ingress-vars" {
   depends_on = [ time_sleep.wait_for_for_elb ]
+  provider    = kubernetes.managed_cluster
+
   api_version = "v1"
   kind        = "Service"
 

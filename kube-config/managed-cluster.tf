@@ -40,8 +40,26 @@ resource "null_resource" "set_managed_cluster_kubeconfig" {
   }
 }
 
-resource "local_file" "backup_managed_cluster_kubeconfig_file" {
+resource "null_resource" "backup_managed_cluster_kubeconfig_file" {
   depends_on = [ null_resource.set_managed_cluster_kubeconfig ]
-  source     = var.default_kubeconfig_filename
-  filename   = var.managed_cluster_kubeconfig_filename
+
+  ## Empty the ~/.kube/config file
+  provisioner "local-exec" {
+    interpreter = [ "/bin/bash", "-c" ]
+    command = "cp -v \"$SRC\" \"$DEST\" "
+    environment = {
+      SRC  = var.default_kubeconfig_filename
+      DEST = var.managed_cluster_kubeconfig_filename
+    }
+  }
+
+  triggers = {
+    timestamp = "${timestamp()}"
+  }
 }
+
+# resource "local_file" "backup_managed_cluster_kubeconfig_file" {
+#   depends_on = [ null_resource.set_managed_cluster_kubeconfig ]
+#   source     = var.default_kubeconfig_filename
+#   filename   = var.managed_cluster_kubeconfig_filename
+# }

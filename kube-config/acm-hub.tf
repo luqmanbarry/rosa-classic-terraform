@@ -40,8 +40,26 @@ resource "null_resource" "set_acmhub_kubeconfig" {
   }
 }
 
-resource "local_file" "backup_acmhub_kubeconfig_file" {
-  depends_on = [ null_resource.set_acmhub_kubeconfig ]
-  source     = var.default_kubeconfig_filename
-  filename   = var.acmhub_kubeconfig_filename
+resource "null_resource" "backup_acmhub_kubeconfig_file" {
+  depends_on = [ null_resource.set_managed_cluster_kubeconfig ]
+
+  ## Empty the ~/.kube/config file
+  provisioner "local-exec" {
+    interpreter = [ "/bin/bash", "-c" ]
+    command = "cp -v \"$SRC\" \"$DEST\" "
+    environment = {
+      SRC  = var.default_kubeconfig_filename
+      DEST = var.acmhub_kubeconfig_filename
+    }
+  }
+
+  triggers = {
+    timestamp = "${timestamp()}"
+  }
 }
+
+# resource "local_file" "backup_acmhub_kubeconfig_file" {
+#   depends_on = [ null_resource.set_acmhub_kubeconfig ]
+#   source     = var.default_kubeconfig_filename
+#   filename   = var.acmhub_kubeconfig_filename
+# }
