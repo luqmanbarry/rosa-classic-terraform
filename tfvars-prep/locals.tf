@@ -96,6 +96,7 @@ locals {
       format("availability_zones=%v", toset(length(local.private_availability_zones) > 0 ? local.private_availability_zones : local.public_availability_zones)),
       format("hosted_zone_id=%q", local.hosted_zone_id),
       format("base_dns_domain=%q", local.base_dns_domain),
+      format("vault_addr=%q", var.vault_addr),
       format("aws_additional_compute_security_group_ids=%v", local.aws_additional_compute_security_group_ids),
       format("aws_additional_control_plane_security_group_ids=%v", local.aws_additional_control_plane_security_group_ids),
       format("aws_additional_infra_security_group_ids=%v", toset(local.aws_additional_infra_security_group_ids)),

@@ -31,7 +31,7 @@
   
   - Identity Provider Details. Look at the [idp-idp_name.tf](./rosa-classic/) files for a guide.
     
-    For example: GitLab IDP credentials are stored at vault path `kvv2/identity-providers/dev/gitlab` and the the secret data below.
+    For example: GitLab IDP credentials are stored at vault path `kv/identity-providers/dev/gitlab` and the the secret data below.
     ```json
       {
         "client_id": "<value>",
@@ -42,7 +42,7 @@
 
   - ACMHUB cluster credentials (api_url, username, password)
 
-    For example: ACMHUB cluster credentials are stored at vault path `kvv2/acmhub/dev/<cluster-name>` and the secret data below.
+    For example: ACMHUB cluster credentials are stored at vault path `kv/acmhub/dev/<cluster-name>` and the secret data below.
     ```json
       {
         "api_url": "https://api.example.p1.openshiftapps.com:6443",
@@ -53,7 +53,7 @@
 
   - OCM Token
   
-    For example: The OCM token is stored at vault path `kvv2/rosa/ocm-token` and the secret data below.
+    For example: The OCM token is stored at vault path `kv/rosa/ocm-token` and the secret data below.
     ```json
       {
         "ocm_token": "<value>"
@@ -62,7 +62,7 @@
 
   - Github/GitLab Authentication Token
   
-    For Example: The Git token is stored at vault path `kvv2/git/github/pat` and the secret data below.
+    For Example: The Git token is stored at vault path `kv/git/github/pat` and the secret data below.
     ```json
       {
         "git_token": "<value>"
@@ -124,9 +124,9 @@ Listed in their order of precedence, they work together to provision a ROSA clus
     export TF_VAR_aws_account="<value>"
     # Could gnerated by the user
     export TF_VAR_vault_token="<value>"
-    # Vault Path: kvv2/rosa/ocm-token
+    # Vault Path: kv/rosa/ocm-token
     export TF_VAR_ocm_token="<value>"
-    # Vault Path: kvv2/git/github/pat
+    # Vault Path: kv/git/github/pat
     export TF_VAR_git_token="<value>"
 
     export TF_VAR_tfstate_s3_bucket_name="rosa-sts-tfstate"

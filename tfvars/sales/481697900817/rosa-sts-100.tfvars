@@ -23,7 +23,7 @@ custom_ingress_machine_pool_max_replicas = 15
 ingress_sharding_tags         = [ "shard1" ]
 ingress_pod_replicas          = 3 # One pod per node. Must match number of available nodes (infra or worker or both)
 admin_creds_vault_generate_secret     = true
-ocp_vault_secret_engine_mount         = "kvv2"
+ocp_vault_secret_engine_mount         = "kv"
 pod_cidr                      = "172.128.0.0/14"
 service_cidr                  = "172.127.0.0/16"
 

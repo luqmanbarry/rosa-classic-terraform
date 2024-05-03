@@ -20,7 +20,7 @@ resource "random_password" "password" {
 
 resource "time_sleep" "wait_for_api_url" {
   depends_on  = [ rhcs_cluster_wait.wait_for_cluster_build ]
-  create_duration = "600s"
+  create_duration = "300s"
 }
 
 data "rhcs_cluster_rosa_classic" "get_cluster" {
