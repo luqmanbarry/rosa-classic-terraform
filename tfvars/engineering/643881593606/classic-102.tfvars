@@ -70,7 +70,7 @@ aws_account="643881593606"
 
 vpc_name="classic-102"
 
-vpc_id="vpc-0cbe4ead02438cf21"
+vpc_id="vpc-02641f2e676b4c2b8"
 
 single_nat_gateway=true
 
@@ -100,25 +100,25 @@ create_account_roles=true
 
 private_subnet_cidrs=["10.50.1.0/24","10.50.2.0/24","10.50.3.0/24"]
 
-private_subnet_ids=["subnet-01ac1284ef3dc2d2b","subnet-01d4be3b84a5d5e7c","subnet-0561b3a1729d1fc42"]
+private_subnet_ids=["subnet-00431ccd049c677a7","subnet-02a7fdc6df01af1fc","subnet-04984b986b66a27c3"]
 
 public_subnet_cidrs=["10.50.101.0/24","10.50.102.0/24","10.50.103.0/24"]
 
-public_subnet_ids=["subnet-04f46b883f56a26a8","subnet-0a978690de9e6b618","subnet-0ca0ebff6eb31cc7a"]
+public_subnet_ids=["subnet-01bacac18a3a91d24","subnet-0908f36cbe40f3ba6","subnet-0e3e83f45755948d4"]
 
 availability_zones=["us-east-1a","us-east-1b","us-east-1c"]
 
-hosted_zone_id="Z084882916IDVCQDVC280"
+hosted_zone_id="Z0816449190C17MR909LJ"
 
 base_dns_domain="non-prod.engineering.example.com"
 
 vault_addr="https://vault.apps.classic-102.swew.p1.openshiftapps.com"
 
-aws_additional_compute_security_group_ids=["sg-00cf3f9fb4b9e8e00"]
+aws_additional_compute_security_group_ids=["sg-025b70ba748f6581f"]
 
-aws_additional_control_plane_security_group_ids=["sg-00cf3f9fb4b9e8e00"]
+aws_additional_control_plane_security_group_ids=["sg-025b70ba748f6581f"]
 
-aws_additional_infra_security_group_ids=["sg-00cf3f9fb4b9e8e00"]
+aws_additional_infra_security_group_ids=["sg-025b70ba748f6581f"]
 
 acmhub_cluster_env="dev"
 

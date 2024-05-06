@@ -31,7 +31,7 @@ export TF_VAR_acmhub_cluster_env="dev"
 
 export TF_VAR_create_account_roles=true # Set value to false if account_roles already exists.
 
-export TF_VAR_admin_creds_save_to_vault=true # Set value to true if you have vaut instance
+export TF_VAR_admin_creds_save_to_vault=false # Set value to true if you have vaut instance
 # VAULT INFO MUST BE SET IF admin_creds_save_to_vault=true
 export TF_VAR_vault_token="<redacted-vault-token>" # Could gnerated by the user
 export TF_VAR_vault_addr="https://vault.apps.classic-102.abc12.p1.openshiftapps.com" # Change this to your vault address - Use .ci/vault-deploy.sh to deploy one inside OCP
