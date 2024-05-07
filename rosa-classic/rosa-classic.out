@@ -2,41 +2,41 @@
   "admin_password": {
     "sensitive": true,
     "type": "string",
-    "value": "kOwH?hrfoEVOVW]-b7461[h256VME3373(HZOhdJ"
+    "value": "c9j9354IU[shdv[XEg1C0Gp8LS4[9qjE(?3=nrVU"
   },
   "admin_username": {
     "sensitive": true,
     "type": "string",
-    "value": "62d78ede-a9a0-64e8-665d-e96aaeee8958"
+    "value": "6a99854c-ab98-b7dc-8bdf-e2dc2842b344"
   },
   "api_url": {
     "sensitive": false,
     "type": "string",
-    "value": "https://api.classic-102.swew.p1.openshiftapps.com:6443"
+    "value": "https://api.classic-103.ggaf.p1.openshiftapps.com:6443"
   },
   "cluster_id": {
     "sensitive": false,
     "type": "string",
-    "value": "2b1cpjq6u1c4pknbg5gtj99v5nuvvtqo"
+    "value": "2b42og9as4lmk4u23a6ej24hif7bdphi"
   },
   "cluster_name": {
     "sensitive": false,
     "type": "string",
-    "value": "classic-102"
+    "value": "classic-103"
   },
   "console_url": {
     "sensitive": false,
     "type": "string",
-    "value": "https://console-openshift-console.apps.classic-102.swew.p1.openshiftapps.com"
+    "value": "https://console-openshift-console.apps.classic-103.ggaf.p1.openshiftapps.com"
   },
   "domain": {
     "sensitive": false,
     "type": "string",
-    "value": "classic-102.swew.p1.openshiftapps.com"
+    "value": "classic-103.ggaf.p1.openshiftapps.com"
   },
   "oidc_endpoint_url": {
     "sensitive": false,
     "type": "string",
-    "value": "oidc.op1.openshiftapps.com/2b1cpcm3ccdgdrqpbn6c5lbb4d45vdia"
+    "value": "oidc.op1.openshiftapps.com/2b42o92adhghlvv4onrqdumujrinvnfl"
   }
 }

@@ -124,7 +124,7 @@ acmhub_cluster_env="dev"
 
 admin_creds_vault_secret_name_prefix="rosa/cluster-admins/dev"
 
-admin_creds_save_to_vault=true
+admin_creds_save_to_vault=false
 
 ldap_vault_secret_name="identity-providers/dev/ldap"
 
