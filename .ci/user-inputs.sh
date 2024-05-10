@@ -8,19 +8,19 @@ export TF_VAR_ocm_token="<value>"
 # Vault Path: kvv2/git/github/pat
 export TF_VAR_git_token="<value>"
 
-export TF_VAR_tfstate_s3_bucket_name="rosa-classic-tfstates-lbarry"
+export TF_VAR_tfstate_s3_bucket_name="rosa-aws-regional-dr-demo"
 export BUCKET_REGION="us-east-1"
 export TF_VAR_vpc_cidr_block="10.91.0.0/16"
 # export TF_VAR_private_subnet_cidrs='["10.70.1.0/24", "10.70.2.0/24", "10.70.3.0/24"]'
 # export TF_VAR_public_subnet_cidrs='["10.70.101.0/24", "10.70.102.0/24", "10.70.103.0/24"]'
 
-export TF_VAR_business_unit="engineering"
+export TF_VAR_business_unit="platform-eng"
 export TF_VAR_cost_center="1010101010"
 export TF_VAR_aws_region="${AWS_REGION}"
 export TF_VAR_openshift_environment="dev"
 export TF_VAR_base_dns_domain="non-prod.${TF_VAR_business_unit}.example.com"
 
-export TF_VAR_cluster_name="classic-103" # Max str length 15 characters
+export TF_VAR_cluster_name="rosa-primary" # Max str length 15 characters
 export TF_ENV="${TF_VAR_openshift_environment}-${TF_VAR_cluster_name}"
 
 export TF_VAR_min_replicas=3
