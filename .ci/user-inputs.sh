@@ -2,27 +2,23 @@ export AWS_ACCESS_KEY_ID='<required>'
 export AWS_SECRET_ACCESS_KEY='<required>'
 export AWS_REGION='us-east-1'
 export TF_VAR_aws_account="<required>"
-
 # Vault Path: kvv2/rosa/ocm-token
-export TF_VAR_ocm_token="971907760384"
+export TF_VAR_ocm_token="<required>"
 # Vault Path: kvv2/git/github/pat
 export TF_VAR_git_token="<required>"
 
-export TF_VAR_tfstate_s3_bucket_name="rosa-aws-regional-dr-demo"
+export TF_VAR_cluster_name="rosa-primary" # Max str length 15 characters
+export TF_VAR_tfstate_s3_bucket_name="rosa-hcp-regional-dr-demo-lbarry"
 export BUCKET_REGION="us-east-1"
 export TF_VAR_vpc_cidr_block="10.90.0.0/16"
-# export TF_VAR_private_subnet_cidrs='["10.70.1.0/24", "10.70.2.0/24", "10.70.3.0/24"]'
-# export TF_VAR_public_subnet_cidrs='["10.70.101.0/24", "10.70.102.0/24", "10.70.103.0/24"]'
 
-export TF_VAR_business_unit="platform-eng"
+export TF_VAR_business_unit="engineering"
 export TF_VAR_cost_center="1010101010"
 export TF_VAR_aws_region="${AWS_REGION}"
 export TF_VAR_openshift_environment="dev"
 export TF_VAR_base_dns_domain="non-prod.${TF_VAR_business_unit}.example.com"
 
-export TF_VAR_cluster_name="rosa-primary" # Max str length 15 characters
 export TF_ENV="${TF_VAR_openshift_environment}-${TF_VAR_cluster_name}"
-
 export TF_VAR_min_replicas=3
 export TF_VAR_max_replicas=30
 
