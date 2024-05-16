@@ -1,16 +1,16 @@
-export AWS_ACCESS_KEY_ID='<value>'
-export AWS_SECRET_ACCESS_KEY='<value>'
-export AWS_REGION='us-west-2'
-export TF_VAR_aws_account="<value>"
+export AWS_ACCESS_KEY_ID='<required>'
+export AWS_SECRET_ACCESS_KEY='<required>'
+export AWS_REGION='us-east-1'
+export TF_VAR_aws_account="<required>"
 
 # Vault Path: kvv2/rosa/ocm-token
-export TF_VAR_ocm_token="<value>"
+export TF_VAR_ocm_token="971907760384"
 # Vault Path: kvv2/git/github/pat
-export TF_VAR_git_token="<value>"
+export TF_VAR_git_token="<required>"
 
 export TF_VAR_tfstate_s3_bucket_name="rosa-aws-regional-dr-demo"
 export BUCKET_REGION="us-east-1"
-export TF_VAR_vpc_cidr_block="10.91.0.0/16"
+export TF_VAR_vpc_cidr_block="10.90.0.0/16"
 # export TF_VAR_private_subnet_cidrs='["10.70.1.0/24", "10.70.2.0/24", "10.70.3.0/24"]'
 # export TF_VAR_public_subnet_cidrs='["10.70.101.0/24", "10.70.102.0/24", "10.70.103.0/24"]'
 
