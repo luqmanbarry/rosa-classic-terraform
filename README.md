@@ -6,7 +6,7 @@
 - [Detailed List](https://docs.openshift.com/rosa/rosa_planning/rosa-sts-aws-prereqs.html)
 
 ### Execution Level
-- ROSA Classic enabled and accounts linked
+- ROSA Classic [enabled](https://docs.aws.amazon.com/rosa/latest/userguide/getting-started-sts-auto.html#getting-started-sts-auto-step-1) and accounts linked
 - IAM STS User with permission to:
   - Create Operator Roles
   - Create S3 Bucket (TF State Bucket)
@@ -102,7 +102,7 @@ Listed in their order of precedence, they work together to provision a ROSA clus
 - [account-setup](./account-setup/): Create necessary AWS resources such as VPC, Subnets, NAT Gateways, Account Roles. Security Groups..etc. This module is optional if you choose to implement account setup through other means.
 - [tfvars-prep](./tfvars-prep/): Combine admin, user inputs, and dynamic variables into a master tfvars file. All subsequent modules will use the master tfvars file.
 - [git-tfvars-file](./git-tfvars-file/): Commit the master tfvars file to GitHub. Feel free to change the repo location to GitLab, BitBucket...etc.
-- [rosa-sts](./rosa-sts/): Creates the ROSA cluster, deploys two identity providers (GitHub, GitLab), and then writes the cluster-admin credentials to Vault.
+- [rosa-classic](./rosa-classic/): Creates the ROSA cluster, deploys two identity providers (GitHub, GitLab), and then writes the cluster-admin credentials to Vault.
 - [kube-config](./kube-config/): Create two `kubeconfig` files. One for the ROSA cluster and another for the ACMHUB cluster.
 - [custom-ingress](./custom-ingress/): Deploys an additional IngressController.
 - [vault-k8s-auth](./vault-k8s-auth/): Deploy the vault-kubernetes-authentication backend for apps running on the cluster to be able to read Vault secrets.
