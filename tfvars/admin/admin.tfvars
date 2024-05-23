@@ -9,7 +9,6 @@ managed_cluster_kubeconfig_filename = "/Users/luqman/.managed_cluster-kube/confi
 acmhub_kubeconfig_filename          = "/Users/luqman/.acmhub-kube/config" # Use absolute path 
 #================ ROSA CLUSTER =========================================================
 managed_oidc                  = true
-worker_node_replicas          = 3
 autoscaling_enabled           = true
 custom_ingress_domain_prefix = "ingress1"
 custom_ingress_name          = "ingress1"

@@ -12,7 +12,7 @@ data "vault_kv_secret_v2" "rosa_cluster_details" {
 resource "rhcs_machine_pool" "ing_shard1_machine_pool" {
   depends_on = [ data.vault_kv_secret_v2.rosa_cluster_details ]
   
-  cluster                           = lookup(data.vault_kv_secret_v2.rosa_cluster_details.data, "cluster_id")
+  cluster                           = try(lookup(data.vault_kv_secret_v2.rosa_cluster_details.data, "cluster_id"), null)
   name                              = var.custom_ingress_name
   machine_type                      = var.custom_ingress_machine_type
   labels                            = merge(local.ingress_labels, var.additional_tags)
