@@ -4,10 +4,10 @@
   "annotations":
     "Owner": "cluster-ingress-operator"
     "ingress.operator.openshift.io/auto-delete-load-balancer": "true"
-  "creationTimestamp": "2024-05-03T17:33:05Z"
+  "creationTimestamp": "2024-05-28T18:41:39Z"
   "finalizers":
   - "ingresscontroller.operator.openshift.io/finalizer-ingresscontroller"
-  "generation": 6
+  "generation": 3
   "managedFields":
   - "apiVersion": "operator.openshift.io/v1"
     "fieldsType": "FieldsV1"
@@ -49,7 +49,7 @@
         "f:unsupportedConfigOverrides": {}
     "manager": "ingress-operator"
     "operation": "Update"
-    "time": "2024-05-03T17:33:05Z"
+    "time": "2024-05-28T18:41:40Z"
   - "apiVersion": "operator.openshift.io/v1"
     "fieldsType": "FieldsV1"
     "fieldsV1":
@@ -61,6 +61,7 @@
       "f:spec":
         "f:defaultCertificate": {}
         "f:domain": {}
+        "f:namespaceSelector": {}
         "f:nodePlacement":
           ".": {}
           "f:nodeSelector": {}
@@ -72,15 +73,7 @@
         "f:routeSelector": {}
     "manager": "manager"
     "operation": "Update"
-    "time": "2024-05-03T20:02:56Z"
-  - "apiVersion": "operator.openshift.io/v1"
-    "fieldsType": "FieldsV1"
-    "fieldsV1":
-      "f:spec":
-        "f:namespaceSelector": {}
-    "manager": "kubectl-patch"
-    "operation": "Update"
-    "time": "2024-05-03T22:49:55Z"
+    "time": "2024-05-28T19:09:43Z"
   - "apiVersion": "operator.openshift.io/v1"
     "fieldsType": "FieldsV1"
     "fieldsV1":
@@ -113,11 +106,11 @@
     "manager": "ingress-operator"
     "operation": "Update"
     "subresource": "status"
-    "time": "2024-05-03T22:50:28Z"
+    "time": "2024-05-28T19:24:44Z"
   "name": "default"
   "namespace": "openshift-ingress-operator"
-  "resourceVersion": "365969"
-  "uid": "b0302420-b2f5-4e9c-a01d-362520c26ca5"
+  "resourceVersion": "79485"
+  "uid": "a8f57683-d498-4b1a-8614-dac559b3bb88"
 "spec":
   "clientTLS":
     "allowedSubjectPatterns": null
@@ -125,8 +118,8 @@
       "name": ""
     "clientCertificatePolicy": ""
   "defaultCertificate":
-    "name": "classic-102-primary-cert-bundle-secret"
-  "domain": "apps.classic-102.swew.p1.openshiftapps.com"
+    "name": "classic-1092-primary-cert-bundle-secret"
+  "domain": "apps.classic-1092.pme0.p1.openshiftapps.com"
   "endpointPublishingStrategy":
     "hostNetwork":
       "httpPort": null
@@ -185,11 +178,7 @@
       "httpLogFormat": null
       "logEmptyRequests": null
   "namespaceSelector":
-    "matchExpressions":
-    - "key": "ingress-role"
-      "operator": "NotIn"
-      "values":
-      - "shard1"
+    "matchExpressions": []
     "matchLabels": null
   "nodePlacement":
     "nodeSelector":
@@ -234,88 +223,88 @@
 "status":
   "availableReplicas": 2
   "conditions":
-  - "lastTransitionTime": "2024-05-03T17:33:05Z"
+  - "lastTransitionTime": "2024-05-28T18:41:40Z"
     "message": null
     "reason": "Valid"
     "status": "True"
     "type": "Admitted"
-  - "lastTransitionTime": "2024-05-03T17:39:47Z"
+  - "lastTransitionTime": "2024-05-28T18:49:31Z"
     "message": "The deployment has Available status condition set to True"
     "reason": "DeploymentAvailable"
     "status": "True"
     "type": "DeploymentAvailable"
-  - "lastTransitionTime": "2024-05-03T17:39:47Z"
+  - "lastTransitionTime": "2024-05-28T18:49:31Z"
     "message": "Minimum replicas requirement is met"
     "reason": "DeploymentMinimumReplicasMet"
     "status": "True"
     "type": "DeploymentReplicasMinAvailable"
-  - "lastTransitionTime": "2024-05-03T22:50:28Z"
+  - "lastTransitionTime": "2024-05-28T19:24:44Z"
     "message": "All replicas are available"
     "reason": "DeploymentReplicasAvailable"
     "status": "True"
     "type": "DeploymentReplicasAllAvailable"
-  - "lastTransitionTime": "2024-05-03T22:50:28Z"
+  - "lastTransitionTime": "2024-05-28T19:24:44Z"
     "message": "Deployment is not actively rolling out"
     "reason": "DeploymentNotRollingOut"
     "status": "False"
     "type": "DeploymentRollingOut"
-  - "lastTransitionTime": "2024-05-03T17:33:06Z"
+  - "lastTransitionTime": "2024-05-28T18:41:40Z"
     "message": "The endpoint publishing strategy supports a managed load balancer"
     "reason": "WantedByEndpointPublishingStrategy"
     "status": "True"
     "type": "LoadBalancerManaged"
-  - "lastTransitionTime": "2024-05-03T17:33:09Z"
+  - "lastTransitionTime": "2024-05-28T18:41:43Z"
     "message": "The LoadBalancer service is provisioned"
     "reason": "LoadBalancerProvisioned"
     "status": "True"
     "type": "LoadBalancerReady"
-  - "lastTransitionTime": "2024-05-03T17:33:06Z"
+  - "lastTransitionTime": "2024-05-28T18:41:40Z"
     "message": "LoadBalancer is not progressing"
     "reason": "LoadBalancerNotProgressing"
     "status": "False"
     "type": "LoadBalancerProgressing"
-  - "lastTransitionTime": "2024-05-03T17:33:06Z"
+  - "lastTransitionTime": "2024-05-28T18:41:40Z"
     "message": "DNS management is supported and zones are specified in the cluster
       DNS config."
     "reason": "Normal"
     "status": "True"
     "type": "DNSManaged"
-  - "lastTransitionTime": "2024-05-03T17:33:28Z"
+  - "lastTransitionTime": "2024-05-28T18:41:56Z"
     "message": "The record is provisioned in all reported zones."
     "reason": "NoFailedZones"
     "status": "True"
     "type": "DNSReady"
-  - "lastTransitionTime": "2024-05-03T17:39:47Z"
+  - "lastTransitionTime": "2024-05-28T18:49:31Z"
     "message": null
     "reason": null
     "status": "True"
     "type": "Available"
-  - "lastTransitionTime": "2024-05-03T22:50:28Z"
+  - "lastTransitionTime": "2024-05-28T19:24:44Z"
     "message": null
     "reason": null
     "status": "False"
     "type": "Progressing"
-  - "lastTransitionTime": "2024-05-03T17:39:47Z"
+  - "lastTransitionTime": "2024-05-28T18:49:58Z"
     "message": null
     "reason": null
     "status": "False"
     "type": "Degraded"
-  - "lastTransitionTime": "2024-05-03T17:33:06Z"
+  - "lastTransitionTime": "2024-05-28T18:41:40Z"
     "message": "IngressController is upgradeable."
     "reason": "Upgradeable"
     "status": "True"
     "type": "Upgradeable"
-  - "lastTransitionTime": "2024-05-03T17:33:06Z"
+  - "lastTransitionTime": "2024-05-28T18:41:40Z"
     "message": "No evaluation condition is detected."
     "reason": "NoEvaluationCondition"
     "status": "False"
     "type": "EvaluationConditionsDetected"
-  - "lastTransitionTime": "2024-05-03T17:40:53Z"
+  - "lastTransitionTime": "2024-05-28T18:49:58Z"
     "message": "Canary route checks for the default ingress controller are successful"
     "reason": "CanaryChecksSucceeding"
     "status": "True"
     "type": "CanaryChecksSucceeding"
-  "domain": "apps.classic-102.swew.p1.openshiftapps.com"
+  "domain": "apps.classic-1092.pme0.p1.openshiftapps.com"
   "endpointPublishingStrategy":
     "hostNetwork":
       "httpPort": null
@@ -343,13 +332,9 @@
       "protocol": null
     "type": "LoadBalancerService"
   "namespaceSelector":
-    "matchExpressions":
-    - "key": "ingress-role"
-      "operator": "NotIn"
-      "values":
-      - "shard1"
+    "matchExpressions": null
     "matchLabels": null
-  "observedGeneration": 6
+  "observedGeneration": 3
   "routeSelector":
     "matchExpressions": null
     "matchLabels": null

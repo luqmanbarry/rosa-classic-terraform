@@ -27,11 +27,11 @@ echo "=================================================="
 echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
-if !(aws s3api head-bucket --region="${BUCKET_REGION}" --bucket "${TF_VAR_tfstate_s3_bucket_name}" 2>/dev/null);
+if !(aws s3api head-bucket --region="${TF_VAR_tfstate_bucket_region}" --bucket "${TF_VAR_tfstate_s3_bucket_name}" 2>/dev/null);
 then
   echo "===> TFState bucket does not exists. Creating..."
   cd "${TF_MODULE}"
-  rm -rf .terraform || true && rm -rf .terraform.lock.hcl || true
+  rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
   unset TF_WORKSPACE
   terraform init
   terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
@@ -50,12 +50,12 @@ echo "=================================================="
 echo "==> Module - $TF_MODULE"
 echo "=================================================="
 cd "${TF_MODULE}"
-rm -rf .terraform || true && rm -rf .terraform.lock.hcl || true
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
 unset TF_WORKSPACE
 terraform init \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
   -backend-config="key=${BACKEND_KEY}" \
-  -backend-config="region=${BUCKET_REGION}"
+  -backend-config="region=${TF_VAR_tfstate_bucket_region}"
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
 cd ${WORKING_DIRECTORY}
@@ -69,12 +69,12 @@ echo "=================================================="
 echo "==> Module - $TF_MODULE"
 echo "=================================================="
 cd "${TF_MODULE}"
-rm -rf .terraform || true && rm -rf .terraform.lock.hcl || true
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
 unset TF_WORKSPACE
 terraform init \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
   -backend-config="key=${BACKEND_KEY}" \
-  -backend-config="region=${BUCKET_REGION}"
+  -backend-config="region=${TF_VAR_tfstate_bucket_region}"
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
 cd ${WORKING_DIRECTORY}
@@ -88,12 +88,12 @@ echo "=================================================="
 echo "==> Module - $TF_MODULE"
 echo "=================================================="
 cd "${TF_MODULE}"
-rm -rf .terraform || true && rm -rf .terraform.lock.hcl || true
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
 unset TF_WORKSPACE
 terraform init \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
   -backend-config="key=${BACKEND_KEY}" \
-  -backend-config="region=${BUCKET_REGION}"
+  -backend-config="region=${TF_VAR_tfstate_bucket_region}"
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
 cd ${WORKING_DIRECTORY}
@@ -107,93 +107,91 @@ echo "=================================================="
 echo "==> Module - $TF_MODULE"
 echo "=================================================="
 cd "${TF_MODULE}"
-rm -rf .terraform || true && rm -rf .terraform.lock.hcl || true
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
 unset TF_WORKSPACE
 terraform init \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
   -backend-config="key=${BACKEND_KEY}" \
-  -backend-config="region=${BUCKET_REGION}"
+  -backend-config="region=${TF_VAR_tfstate_bucket_region}"
 terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan" | tee "${TF_VAR_cluster_name}-logs.out"
 terraform output -json | tee "${TF_VAR_cluster_name}-output.out"
 cd ${WORKING_DIRECTORY}
 
-# echo "#########################################################################################################"
-# TF_MODULE="kube-config"
-# BACKEND_KEY="${TF_VAR_openshift_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
-# BACKEND_PATH="${TF_MODULE}"
-# TFVARS_FILE="../tfvars/${TF_VAR_business_unit}/${TF_VAR_aws_account}/${TF_VAR_cluster_name}.tfvars"
-# echo "=================================================="
-# echo "===========> Module - $TF_MODULE "
-# echo "=================================================="
-# cd "${TF_MODULE}"
-# rm -rf .terraform || true && rm -rf .terraform.lock.hcl || true
-# unset TF_WORKSPACE
-# terraform init \
-#   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
-#   -backend-config="key=${BACKEND_KEY}" \
-#   -backend-config="region=${BUCKET_REGION}"
-# terraform workspace new ${TF_ENV} || echo "Workspace ${TF_ENV} already exists or cannot be created"
-# export TF_WORKSPACE="${TF_ENV}"
-# terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
-# terraform apply "$TF_MODULE.plan"
-# cd ${WORKING_DIRECTORY}
+echo "#########################################################################################################"
+TF_MODULE="kube-config"
+BACKEND_KEY="${TF_VAR_openshift_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
+BACKEND_PATH="${TF_MODULE}"
+TFVARS_FILE="../tfvars/${TF_VAR_business_unit}/${TF_VAR_aws_account}/${TF_VAR_cluster_name}.tfvars"
+echo "=================================================="
+echo "===========> Module - $TF_MODULE "
+echo "=================================================="
+cd "${TF_MODULE}"
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
+unset TF_WORKSPACE
+terraform init \
+  -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
+  -backend-config="key=${BACKEND_KEY}" \
+  -backend-config="region=${TF_VAR_tfstate_bucket_region}"
+terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
+terraform apply "$TF_MODULE.plan"
+cd ${WORKING_DIRECTORY}
 
 
-# echo "#########################################################################################################"
-# set +e # Expected to fail when adding Route53 record (invalid dns_domain)
-# TF_MODULE="custom-ingress"
-# BACKEND_KEY="${TF_VAR_openshift_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
-# BACKEND_PATH="${TF_MODULE}"
-# TFVARS_FILE="../tfvars/${TF_VAR_business_unit}/${TF_VAR_aws_account}/${TF_VAR_cluster_name}.tfvars"
-# echo "=================================================="
-# echo "===========> Module - $TF_MODULE "
-# echo "=================================================="
-# cd "${TF_MODULE}"
-# rm -rf .terraform || true && rm -rf .terraform.lock.hcl || true
-# unset TF_WORKSPACE
-# terraform init \
-#   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
-#   -backend-config="key=${BACKEND_KEY}" \
-#   -backend-config="region=${BUCKET_REGION}"
-# terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
-# terraform apply "$TF_MODULE.plan"
-# cd ${WORKING_DIRECTORY}
+echo "#########################################################################################################"
+set +e # Expected to fail when adding Route53 record (invalid dns_domain)
+TF_MODULE="custom-ingress"
+BACKEND_KEY="${TF_VAR_openshift_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
+BACKEND_PATH="${TF_MODULE}"
+TFVARS_FILE="../tfvars/${TF_VAR_business_unit}/${TF_VAR_aws_account}/${TF_VAR_cluster_name}.tfvars"
+echo "=================================================="
+echo "===========> Module - $TF_MODULE "
+echo "=================================================="
+cd "${TF_MODULE}"
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
+unset TF_WORKSPACE
+terraform init \
+  -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
+  -backend-config="key=${BACKEND_KEY}" \
+  -backend-config="region=${TF_VAR_tfstate_bucket_region}"
+terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
+terraform apply "$TF_MODULE.plan"
+cd ${WORKING_DIRECTORY}
 
-# echo "#########################################################################################################"
-# TF_MODULE="vault-k8s-auth"
-# BACKEND_KEY="${TF_VAR_openshift_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
-# BACKEND_PATH="${TF_MODULE}"
-# TFVARS_FILE="../tfvars/${TF_VAR_business_unit}/${TF_VAR_aws_account}/${TF_VAR_cluster_name}.tfvars"
-# echo "=================================================="
-# echo "===========> Module - $TF_MODULE "
-# echo "=================================================="
-# cd "${TF_MODULE}"
-# rm -rf .terraform || true && rm -rf .terraform.lock.hcl || true
-# unset TF_WORKSPACE
-# terraform init \
-#   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
-#   -backend-config="key=${BACKEND_KEY}" \
-#   -backend-config="region=${BUCKET_REGION}"
-# terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
-# terraform apply "$TF_MODULE.plan"
-# cd ${WORKING_DIRECTORY}
+echo "#########################################################################################################"
+TF_MODULE="vault-k8s-auth"
+BACKEND_KEY="${TF_VAR_openshift_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
+BACKEND_PATH="${TF_MODULE}"
+TFVARS_FILE="../tfvars/${TF_VAR_business_unit}/${TF_VAR_aws_account}/${TF_VAR_cluster_name}.tfvars"
+echo "=================================================="
+echo "===========> Module - $TF_MODULE "
+echo "=================================================="
+cd "${TF_MODULE}"
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
+unset TF_WORKSPACE
+terraform init \
+  -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
+  -backend-config="key=${BACKEND_KEY}" \
+  -backend-config="region=${TF_VAR_tfstate_bucket_region}"
+terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
+terraform apply "$TF_MODULE.plan"
+cd ${WORKING_DIRECTORY}
 
-# echo "#########################################################################################################"
-# TF_MODULE="acmhub-registration"
-# BACKEND_KEY="${TF_VAR_openshift_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
-# BACKEND_PATH="${TF_MODULE}"
-# TFVARS_FILE="../tfvars/${TF_VAR_business_unit}/${TF_VAR_aws_account}/${TF_VAR_cluster_name}.tfvars"
-# echo "=================================================="
-# echo "===========> Module - $TF_MODULE "
-# echo "=================================================="
-# cd "${TF_MODULE}"
-# rm -rf .terraform || true && rm -rf .terraform.lock.hcl || true
-# unset TF_WORKSPACE
-# terraform init \
-#   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
-#   -backend-config="key=${BACKEND_KEY}" \
-#   -backend-config="region=${BUCKET_REGION}"
-# terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
-# terraform apply "$TF_MODULE.plan"
-# cd ${WORKING_DIRECTORY}
+echo "#########################################################################################################"
+TF_MODULE="acmhub-registration"
+BACKEND_KEY="${TF_VAR_openshift_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
+BACKEND_PATH="${TF_MODULE}"
+TFVARS_FILE="../tfvars/${TF_VAR_business_unit}/${TF_VAR_aws_account}/${TF_VAR_cluster_name}.tfvars"
+echo "=================================================="
+echo "===========> Module - $TF_MODULE "
+echo "=================================================="
+cd "${TF_MODULE}"
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
+unset TF_WORKSPACE
+terraform init \
+  -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
+  -backend-config="key=${BACKEND_KEY}" \
+  -backend-config="region=${TF_VAR_tfstate_bucket_region}"
+terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
+terraform apply "$TF_MODULE.plan"
+cd ${WORKING_DIRECTORY}

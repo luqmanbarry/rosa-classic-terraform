@@ -27,7 +27,7 @@ echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
 cd "${TF_MODULE}"
-rm -rf .terraform || true && rm -rf .terraform.lock.hcl || true
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
 unset TF_WORKSPACE
 terraform init \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
@@ -47,7 +47,7 @@ echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
 cd "${TF_MODULE}"
-rm -rf .terraform || true && rm -rf .terraform.lock.hcl || true
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
 unset TF_WORKSPACE
 terraform init \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
@@ -67,7 +67,7 @@ echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
 cd "${TF_MODULE}"
-rm -rf .terraform || true && rm -rf .terraform.lock.hcl || true
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
 unset TF_WORKSPACE
 terraform init \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
@@ -87,7 +87,7 @@ echo "==> Module - $TF_MODULE"
 echo "=================================================="
 
 cd "${TF_MODULE}"
-rm -rf .terraform || true && rm -rf .terraform.lock.hcl || true
+rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
 unset TF_WORKSPACE
 terraform init \
   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
