@@ -40,8 +40,7 @@ resource "null_resource" "set_managed_cluster_kubeconfig" {
 }
 
 resource "null_resource" "backup_managed_cluster_kubeconfig_file" {
-  depends_on = [ null_resource.set_managed_cluster_kubeconfig ]
-
+  
   ## Empty the ~/.kube/config file
   provisioner "local-exec" {
     interpreter = [ "/bin/bash", "-c" ]
