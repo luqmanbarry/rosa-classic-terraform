@@ -11,7 +11,7 @@ resource "rhcs_cluster_rosa_classic" "rosa_sts_cluster" {
 
   name                 = local.cluster_name
   cloud_region         = var.aws_region
-  multi_az             = ((length(var.private_subnet_ids) > 2 || length(var.private_subnet_ids) > 2) ? true : false)
+  multi_az             = ((length(var.private_subnet_ids) > 2 || length(var.public_subnet_ids) > 2) ? true : false)
   aws_account_id       = data.aws_caller_identity.current.account_id
   availability_zones   = sort(toset(var.availability_zones))
   version              = var.ocp_version
