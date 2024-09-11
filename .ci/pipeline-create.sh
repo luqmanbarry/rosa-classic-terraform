@@ -79,24 +79,24 @@ terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
 terraform apply "$TF_MODULE.plan"
 cd ${WORKING_DIRECTORY}
 
-echo "#########################################################################################################"
-TF_MODULE="git-tfvars-file"
-BACKEND_KEY="${TF_VAR_openshift_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
-BACKEND_PATH="${TF_MODULE}"
-TFVARS_FILE="../tfvars/${TF_VAR_business_unit}/${TF_VAR_aws_account}/${TF_VAR_cluster_name}.tfvars"
-echo "=================================================="
-echo "==> Module - $TF_MODULE"
-echo "=================================================="
-cd "${TF_MODULE}"
-rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
-unset TF_WORKSPACE
-terraform init \
-  -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
-  -backend-config="key=${BACKEND_KEY}" \
-  -backend-config="region=${TF_VAR_tfstate_bucket_region}"
-terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
-terraform apply "$TF_MODULE.plan"
-cd ${WORKING_DIRECTORY}
+# echo "#########################################################################################################"
+# TF_MODULE="git-tfvars-file"
+# BACKEND_KEY="${TF_VAR_openshift_environment}/${TF_VAR_cluster_name}/${TF_MODULE}.tfstate"
+# BACKEND_PATH="${TF_MODULE}"
+# TFVARS_FILE="../tfvars/${TF_VAR_business_unit}/${TF_VAR_aws_account}/${TF_VAR_cluster_name}.tfvars"
+# echo "=================================================="
+# echo "==> Module - $TF_MODULE"
+# echo "=================================================="
+# cd "${TF_MODULE}"
+# rm -rf .terraform || true && (rm -rf .terraform.lock.hcl || true) && (rm -rf terraform.tfstate.d || true)
+# unset TF_WORKSPACE
+# terraform init \
+#   -backend-config="bucket=${TF_VAR_tfstate_s3_bucket_name}" \
+#   -backend-config="key=${BACKEND_KEY}" \
+#   -backend-config="region=${TF_VAR_tfstate_bucket_region}"
+# terraform plan -out "$TF_MODULE.plan" -var-file="$TFVARS_FILE"
+# terraform apply "$TF_MODULE.plan"
+# cd ${WORKING_DIRECTORY}
 
 echo "#########################################################################################################"
 TF_MODULE="rosa-classic"
