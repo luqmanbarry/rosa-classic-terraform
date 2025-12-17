@@ -43,7 +43,7 @@ vault_auth_backend_audience             = "vault"
 #================= GIT MGMT OF TFVARS ================================================
 git_base_url            = "https://github.com/"
 git_owner               = "luqmanbarry"
-git_repository          = "rosa-sts-terraform"
+git_repository          = "rosa-classic-terraform"
 git_base_branch         = "main"
 git_commit_email        = "dhabbhoufaamou@gmail.com"
 #========================== CICD/Bastion Network Info ==============================
