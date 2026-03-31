@@ -58,14 +58,28 @@ variable "gitops_values" {
 
 variable "gitops_repo_username" {
   type        = string
-  description = "Optional repository username."
+  description = "Optional repository username for legacy basic-auth bootstrap."
   default     = ""
   sensitive   = true
 }
 
 variable "gitops_repo_password" {
   type        = string
-  description = "Optional repository password or token."
+  description = "Optional repository password for legacy basic-auth bootstrap."
+  default     = ""
+  sensitive   = true
+}
+
+variable "gitops_repo_token" {
+  type        = string
+  description = "Optional Git access token for bootstrap. Prefer a short-lived GitHub App installation token or PAT over legacy basic auth."
+  default     = ""
+  sensitive   = true
+}
+
+variable "gitops_repo_token_username" {
+  type        = string
+  description = "Username to pair with gitops_repo_token when the Git provider expects one. Use x-access-token for GitHub."
   default     = ""
   sensitive   = true
 }

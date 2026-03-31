@@ -49,3 +49,15 @@ variable "gitops_repo_password" {
   default   = ""
   sensitive = true
 }
+
+variable "gitops_repo_token" {
+  type      = string
+  default   = ""
+  sensitive = true
+}
+
+variable "gitops_repo_token_username" {
+  type      = string
+  default   = "x-access-token"
+  sensitive = true
+}

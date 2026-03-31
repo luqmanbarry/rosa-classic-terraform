@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF' >&2
-usage: run_cluster_workflow.sh --cluster-dir <path> --artifact-dir <path> --mode <validate|plan|apply> [--backend true|false] [--backend-config-file <path>]
+usage: run_cluster_workflow.sh --cluster-dir <path> --artifact-dir <path> --mode <validate|plan|apply> [--backend true|false] [--backend-config-file <path>] [--plan-file <path>]
 EOF
 }
 
@@ -13,6 +13,7 @@ ARTIFACT_DIR=""
 MODE=""
 BACKEND="false"
 BACKEND_CONFIG_FILE=""
+PLAN_FILE=""
 SKIP_TOOL_CHECK="${ROSA_FACTORY_SKIP_TOOL_CHECK:-false}"
 
 while [[ $# -gt 0 ]]; do
@@ -35,6 +36,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --backend-config-file)
       BACKEND_CONFIG_FILE="${2:-}"
+      shift 2
+      ;;
+    --plan-file)
+      PLAN_FILE="${2:-}"
       shift 2
       ;;
     *)
@@ -95,15 +100,20 @@ case "$MODE" in
   validate)
     ;;
   plan)
-    terraform -chdir="$CLUSTER_DIR" plan -out=tfplan
-    terraform -chdir="$CLUSTER_DIR" show -json tfplan > "$ARTIFACT_DIR/terraform-plan.json"
-    terraform -chdir="$CLUSTER_DIR" show -no-color tfplan > "$ARTIFACT_DIR/terraform-plan.txt"
+    plan_file="${PLAN_FILE:-$ARTIFACT_DIR/tfplan}"
+    terraform -chdir="$CLUSTER_DIR" plan -out="$plan_file"
+    terraform -chdir="$CLUSTER_DIR" show -json "$plan_file" > "$ARTIFACT_DIR/terraform-plan.json"
+    terraform -chdir="$CLUSTER_DIR" show -no-color "$plan_file" > "$ARTIFACT_DIR/terraform-plan.txt"
     ;;
   apply)
-    terraform -chdir="$CLUSTER_DIR" plan -out=tfplan
-    terraform -chdir="$CLUSTER_DIR" show -json tfplan > "$ARTIFACT_DIR/terraform-plan.json"
-    terraform -chdir="$CLUSTER_DIR" show -no-color tfplan > "$ARTIFACT_DIR/terraform-plan.txt"
-    terraform -chdir="$CLUSTER_DIR" apply -auto-approve tfplan
+    plan_file="${PLAN_FILE:-$ARTIFACT_DIR/tfplan}"
+    if [[ ! -f "$plan_file" ]]; then
+      echo "plan file not found: $plan_file" >&2
+      exit 1
+    fi
+    terraform -chdir="$CLUSTER_DIR" show -json "$plan_file" > "$ARTIFACT_DIR/terraform-plan.json"
+    terraform -chdir="$CLUSTER_DIR" show -no-color "$plan_file" > "$ARTIFACT_DIR/terraform-plan.txt"
+    terraform -chdir="$CLUSTER_DIR" apply -auto-approve "$plan_file"
     terraform -chdir="$CLUSTER_DIR" output -json > "$ARTIFACT_DIR/terraform-outputs.json"
     ;;
 esac

@@ -94,8 +94,8 @@ stages:
           - script: |
               set -euo pipefail
               sudo apt-get update
-              sudo apt-get install -y jq ripgrep
-            displayName: Install jq and ripgrep
+              sudo apt-get install -y awscli jq ripgrep
+            displayName: Install AWS CLI, jq, and ripgrep
 
           - script: |
               set -euo pipefail
@@ -220,6 +220,25 @@ stages:
 
           - script: |
               set -euo pipefail
+              if [[ -n "${AZURE_FEDERATED_TOKEN_FILE:-}" && -n "${AWS_ROLE_ARN:-}" ]]; then
+                token="$(cat "${AZURE_FEDERATED_TOKEN_FILE}")"
+                creds="$(aws sts assume-role-with-web-identity \
+                  --role-arn "${AWS_ROLE_ARN}" \
+                  --role-session-name "azure-pipelines-rosa-classic-factory" \
+                  --web-identity-token "${token}" \
+                  --duration-seconds 3600)"
+                echo "##vso[task.setvariable variable=AWS_ACCESS_KEY_ID;issecret=true]$(printf '%s' "$creds" | jq -r '.Credentials.AccessKeyId')"
+                echo "##vso[task.setvariable variable=AWS_SECRET_ACCESS_KEY;issecret=true]$(printf '%s' "$creds" | jq -r '.Credentials.SecretAccessKey')"
+                echo "##vso[task.setvariable variable=AWS_SESSION_TOKEN;issecret=true]$(printf '%s' "$creds" | jq -r '.Credentials.SessionToken')"
+              fi
+            displayName: Exchange Azure OIDC token for AWS credentials
+            condition: and(succeeded(), ne(variables['AWS_ROLE_ARN'], ''), ne(variables['AZURE_FEDERATED_TOKEN_FILE'], ''))
+            env:
+              AWS_ROLE_ARN: $(AWS_ROLE_ARN)
+              AZURE_FEDERATED_TOKEN_FILE: $(AZURE_FEDERATED_TOKEN_FILE)
+
+          - script: |
+              set -euo pipefail
               test -n "${AWS_ACCESS_KEY_ID:-}" || { echo "Missing AWS_ACCESS_KEY_ID secret variable." >&2; exit 1; }
               test -n "${AWS_SECRET_ACCESS_KEY:-}" || { echo "Missing AWS_SECRET_ACCESS_KEY secret variable." >&2; exit 1; }
               test -n "${OCM_TOKEN:-}" || { echo "Missing OCM_TOKEN secret variable." >&2; exit 1; }
@@ -253,7 +272,8 @@ stages:
                   --artifact-dir "$artifact_dir" \
                   --mode plan \
                   --backend true \
-                  --backend-config-file "$artifact_dir/backend.hcl"
+                  --backend-config-file "$artifact_dir/backend.hcl" \
+                  --plan-file "$artifact_dir/tfplan"
               done
             displayName: Plan changed cluster stacks
             env:
@@ -267,6 +287,8 @@ stages:
               TF_VAR_vault_login_approle_role_id: $(VAULT_LOGIN_APPROLE_ROLE_ID)
               TF_VAR_vault_login_approle_secret_id: $(VAULT_LOGIN_APPROLE_SECRET_ID)
               TF_VAR_vault_addr: $(VAULT_ADDR)
+              TF_VAR_gitops_repo_token: $(GITOPS_REPO_TOKEN)
+              TF_VAR_gitops_repo_token_username: $(GITOPS_REPO_TOKEN_USERNAME)
               TF_VAR_gitops_repo_username: $(GITOPS_REPO_USERNAME)
               TF_VAR_gitops_repo_password: $(GITOPS_REPO_PASSWORD)
               TF_BACKEND_BUCKET: $(TF_BACKEND_BUCKET)
@@ -314,8 +336,8 @@ stages:
                 - script: |
                     set -euo pipefail
                     sudo apt-get update
-                    sudo apt-get install -y jq ripgrep
-                  displayName: Install jq and ripgrep
+                    sudo apt-get install -y awscli jq ripgrep
+                  displayName: Install AWS CLI, jq, and ripgrep
 
                 - script: |
                     set -euo pipefail
@@ -332,6 +354,30 @@ stages:
 
                 - script: python3 -m pip install --upgrade pyyaml
                   displayName: Install Python dependencies
+
+                - task: DownloadPipelineArtifact@2
+                  inputs:
+                    artifact: 'plan-artifacts'
+                    path: '$(artifact_root)/apply'
+
+                - script: |
+                    set -euo pipefail
+                    if [[ -n "${AZURE_FEDERATED_TOKEN_FILE:-}" && -n "${AWS_ROLE_ARN:-}" ]]; then
+                      token="$(cat "${AZURE_FEDERATED_TOKEN_FILE}")"
+                      creds="$(aws sts assume-role-with-web-identity \
+                        --role-arn "${AWS_ROLE_ARN}" \
+                        --role-session-name "azure-pipelines-rosa-classic-factory" \
+                        --web-identity-token "${token}" \
+                        --duration-seconds 3600)"
+                      echo "##vso[task.setvariable variable=AWS_ACCESS_KEY_ID;issecret=true]$(printf '%s' "$creds" | jq -r '.Credentials.AccessKeyId')"
+                      echo "##vso[task.setvariable variable=AWS_SECRET_ACCESS_KEY;issecret=true]$(printf '%s' "$creds" | jq -r '.Credentials.SecretAccessKey')"
+                      echo "##vso[task.setvariable variable=AWS_SESSION_TOKEN;issecret=true]$(printf '%s' "$creds" | jq -r '.Credentials.SessionToken')"
+                    fi
+                  displayName: Exchange Azure OIDC token for AWS credentials
+                  condition: and(succeeded(), ne(variables['AWS_ROLE_ARN'], ''), ne(variables['AZURE_FEDERATED_TOKEN_FILE'], ''))
+                  env:
+                    AWS_ROLE_ARN: $(AWS_ROLE_ARN)
+                    AZURE_FEDERATED_TOKEN_FILE: $(AZURE_FEDERATED_TOKEN_FILE)
 
                 - script: |
                     set -euo pipefail
@@ -358,8 +404,8 @@ stages:
                     for cluster_dir in "${clusters[@]}"; do
                       [[ -z "$cluster_dir" ]] && continue
                       cluster_slug="$(printf '%s' "$cluster_dir" | tr '/' '_')"
-                      artifact_dir="$(artifact_root)/apply/${cluster_slug}"
-                      mkdir -p "$artifact_dir"
+                      artifact_dir="$(artifact_root)/apply/plan/${cluster_slug}"
+                      test -f "$artifact_dir/tfplan" || { echo "Missing approved plan file for $cluster_dir" >&2; exit 1; }
                       scripts/write_backend_config.sh \
                         --cluster-dir "$cluster_dir" \
                         --output "$artifact_dir/backend.hcl"
@@ -368,7 +414,8 @@ stages:
                         --artifact-dir "$artifact_dir" \
                         --mode apply \
                         --backend true \
-                        --backend-config-file "$artifact_dir/backend.hcl"
+                        --backend-config-file "$artifact_dir/backend.hcl" \
+                        --plan-file "$artifact_dir/tfplan"
                     done
                   displayName: Apply changed cluster stacks
                   env:
@@ -382,6 +429,8 @@ stages:
                     TF_VAR_vault_login_approle_role_id: $(VAULT_LOGIN_APPROLE_ROLE_ID)
                     TF_VAR_vault_login_approle_secret_id: $(VAULT_LOGIN_APPROLE_SECRET_ID)
                     TF_VAR_vault_addr: $(VAULT_ADDR)
+                    TF_VAR_gitops_repo_token: $(GITOPS_REPO_TOKEN)
+                    TF_VAR_gitops_repo_token_username: $(GITOPS_REPO_TOKEN_USERNAME)
                     TF_VAR_gitops_repo_username: $(GITOPS_REPO_USERNAME)
                     TF_VAR_gitops_repo_password: $(GITOPS_REPO_PASSWORD)
                     TF_BACKEND_BUCKET: $(TF_BACKEND_BUCKET)

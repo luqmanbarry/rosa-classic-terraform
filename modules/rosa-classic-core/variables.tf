@@ -130,7 +130,7 @@ variable "gitlab_idp_vault_secret_name" {
 
 variable "vpc_id" {
   type    = string
-  default = "changeme"
+  default = ""
 }
 
 variable "vpc_cidr_block" {
@@ -158,12 +158,12 @@ variable "public_subnet_ids" {
 
 variable "admin_creds_username" {
   type    = string
-  default = "changeme"
+  default = "cluster-admin"
 }
 
 variable "admin_creds_password" {
   type    = string
-  default = "changeme"
+  default = ""
 }
 
 variable "admin_creds_vault_generate" {
@@ -179,12 +179,12 @@ variable "admin_creds_save_to_vault" {
 variable "ocp_vault_secret_engine_mount" {
   type        = string
   description = "Vault KV engine mount path"
-  default     = "changeme"
+  default     = "kv"
 }
 
 variable "admin_creds_vault_secret_name_prefix" {
   type    = string
-  default = "changeme"
+  default = "rosa/cluster-admins"
 }
 
 variable "hosted_zone_id" {
@@ -199,17 +199,17 @@ variable "vault_token" {
 
 variable "vault_login_approle_role_id" {
   type    = string
-  default = "changeme"
+  default = ""
 }
 
 variable "vault_login_approle_secret_id" {
   type    = string
-  default = "changeme"
+  default = ""
 }
 
 variable "vault_addr" {
   type    = string
-  default = "changeme"
+  default = ""
 }
 
 variable "availability_zones" {

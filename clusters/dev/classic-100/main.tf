@@ -12,4 +12,6 @@ module "factory_stack" {
   managed_cluster_kubeconfig_filename = var.managed_cluster_kubeconfig_filename
   gitops_repo_username                = var.gitops_repo_username
   gitops_repo_password                = var.gitops_repo_password
+  gitops_repo_token                   = var.gitops_repo_token
+  gitops_repo_token_username          = var.gitops_repo_token_username
 }

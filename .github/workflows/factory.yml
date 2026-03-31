@@ -47,6 +47,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y jq
           chmod +x scripts/detect_changed_clusters.sh scripts/list_changed_clusters_json.sh
 
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.cluster_dir }}" ]]; then
@@ -189,6 +191,8 @@ jobs:
       TF_VAR_vault_login_approle_role_id: ${{ secrets.VAULT_LOGIN_APPROLE_ROLE_ID }}
       TF_VAR_vault_login_approle_secret_id: ${{ secrets.VAULT_LOGIN_APPROLE_SECRET_ID }}
       TF_VAR_vault_addr: ${{ secrets.VAULT_ADDR }}
+      TF_VAR_gitops_repo_token: ${{ secrets.GITOPS_REPO_TOKEN }}
+      TF_VAR_gitops_repo_token_username: ${{ vars.GITOPS_REPO_TOKEN_USERNAME }}
       TF_VAR_gitops_repo_username: ${{ secrets.GITOPS_REPO_USERNAME }}
       TF_VAR_gitops_repo_password: ${{ secrets.GITOPS_REPO_PASSWORD }}
       TF_BACKEND_BUCKET: ${{ vars.TF_BACKEND_BUCKET }}
@@ -267,7 +271,8 @@ jobs:
             --artifact-dir ".artifacts/plan/${{ matrix.cluster_slug }}" \
             --mode plan \
             --backend true \
-            --backend-config-file ".artifacts/plan/${{ matrix.cluster_slug }}/backend.hcl"
+            --backend-config-file ".artifacts/plan/${{ matrix.cluster_slug }}/backend.hcl" \
+            --plan-file ".artifacts/plan/${{ matrix.cluster_slug }}/tfplan"
 
       - name: Upload plan artifacts
         uses: actions/upload-artifact@v4
@@ -300,6 +305,8 @@ jobs:
       TF_VAR_vault_login_approle_role_id: ${{ secrets.VAULT_LOGIN_APPROLE_ROLE_ID }}
       TF_VAR_vault_login_approle_secret_id: ${{ secrets.VAULT_LOGIN_APPROLE_SECRET_ID }}
       TF_VAR_vault_addr: ${{ secrets.VAULT_ADDR }}
+      TF_VAR_gitops_repo_token: ${{ secrets.GITOPS_REPO_TOKEN }}
+      TF_VAR_gitops_repo_token_username: ${{ vars.GITOPS_REPO_TOKEN_USERNAME }}
       TF_VAR_gitops_repo_username: ${{ secrets.GITOPS_REPO_USERNAME }}
       TF_VAR_gitops_repo_password: ${{ secrets.GITOPS_REPO_PASSWORD }}
       TF_BACKEND_BUCKET: ${{ vars.TF_BACKEND_BUCKET }}
@@ -334,6 +341,12 @@ jobs:
 
       - name: Install Python dependencies
         run: python3 -m pip install --upgrade pyyaml
+
+      - name: Download approved plan artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: plan-${{ matrix.cluster_slug }}
+          path: .artifacts/apply/${{ matrix.cluster_slug }}
 
       - name: Configure AWS credentials from OIDC
         if: ${{ secrets.AWS_ROLE_TO_ASSUME != '' }}
@@ -378,7 +391,8 @@ jobs:
             --artifact-dir ".artifacts/apply/${{ matrix.cluster_slug }}" \
             --mode apply \
             --backend true \
-            --backend-config-file ".artifacts/apply/${{ matrix.cluster_slug }}/backend.hcl"
+            --backend-config-file ".artifacts/apply/${{ matrix.cluster_slug }}/backend.hcl" \
+            --plan-file ".artifacts/apply/${{ matrix.cluster_slug }}/tfplan"
 
       - name: Upload apply artifacts
         uses: actions/upload-artifact@v4

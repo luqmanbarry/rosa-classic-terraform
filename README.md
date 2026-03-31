@@ -46,9 +46,10 @@ This repo builds and manages ROSA Classic clusters on AWS. The inputs live in Gi
 
 - **Bastion/CLI:** Render configs (Vault/ESO secrets) and run `terraform init`, `terraform plan -out=tfplan`, and `terraform apply tfplan` directly on a bastion or jump host.
 - **Bastion helper:** Use `scripts/run_cluster_workflow_bastion.sh` when you want a bastion-specific wrapper with sane artifact defaults.
-- **GitHub Actions:** The repo includes a production workflow that detects changed clusters, validates PRs, generates remote backend config, uploads plan artifacts, and applies after environment approval. Use GitHub secrets and variables for AWS auth, `OCM_TOKEN`, backend state, and any optional Vault or Git credentials.
+- **GitHub Actions:** The repo includes a production workflow that detects changed clusters, validates PRs, generates remote backend config, uploads saved plan artifacts, and applies the approved plan after environment approval. Use GitHub secrets and variables for AWS auth, `OCM_TOKEN`, backend state, and a short-lived `GITOPS_REPO_TOKEN` for bootstrap repo access.
 - **Ansible Automation Platform (AAP):** Use `playbooks/aap/run_cluster_workflow.yml` to call the shared workflow script from an AAP job template.
-- **Azure Pipelines:** The repo includes a production pipeline that detects changed clusters, validates PRs, writes backend config, publishes plan artifacts, and applies only when `terraform_apply=true` and the apply environment is approved.
+- **Azure Pipelines:** The repo includes a production pipeline that detects changed clusters, validates PRs, writes backend config, publishes saved plan artifacts, supports Azure-to-AWS federation, and applies only when `terraform_apply=true` and the apply environment is approved.
+- **Bootstrap Git auth:** Prefer a short-lived Git token or GitHub App installation token for Argo CD bootstrap. Username/password remains only as a legacy fallback.
 - **Docs & bug sweep:** Run `scripts/find_bugs_and_docs_issues.sh` locally or in CI to catch `terraform fmt` regressions and unresolved marker words before they land in Git.
 
 ## Requirements

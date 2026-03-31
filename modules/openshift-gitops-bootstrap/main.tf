@@ -17,6 +17,8 @@ locals {
   root_app_chart_dir         = "${path.module}/../../gitops/bootstrap/root-app"
   operator_values_file       = "${path.module}/.tmp-${var.cluster_name}-openshift-gitops-values.yaml"
   root_app_values_file       = "${path.module}/.tmp-${var.cluster_name}-root-app-values.yaml"
+  git_repo_secret_username   = var.gitops_repo_token != "" ? (trimspace(var.gitops_repo_token_username) != "" ? var.gitops_repo_token_username : "x-access-token") : var.gitops_repo_username
+  git_repo_secret_password   = var.gitops_repo_token != "" ? var.gitops_repo_token : var.gitops_repo_password
 }
 
 resource "local_file" "operator_values" {
@@ -44,8 +46,8 @@ resource "local_file" "root_app_values" {
     git = {
       repoURL        = var.gitops_git_repo_url
       targetRevision = var.gitops_target_revision
-      username       = var.gitops_repo_username
-      password       = var.gitops_repo_password
+      username       = local.git_repo_secret_username
+      password       = local.git_repo_secret_password
     }
     bootstrapValues = merge(
       var.gitops_values,

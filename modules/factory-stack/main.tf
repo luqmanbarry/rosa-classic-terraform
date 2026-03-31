@@ -87,7 +87,7 @@ module "core" {
   private_subnet_ids                              = local.network_private_subnet_ids
   public_subnet_ids                               = local.network_public_subnet_ids
   admin_creds_username                            = try(local.stack.cluster.admin_creds_username, "cluster-admin")
-  admin_creds_password                            = try(local.stack.cluster.admin_creds_password, "changeme")
+  admin_creds_password                            = try(local.stack.cluster.admin_creds_password, "")
   admin_creds_vault_generate                      = try(local.stack.cluster.admin_creds_vault_generate, true)
   admin_creds_save_to_vault                       = try(local.stack.cluster.admin_creds_save_to_vault, false)
   ocp_vault_secret_engine_mount                   = try(local.stack.cluster.ocp_vault_secret_engine_mount, "kv")
@@ -151,4 +151,6 @@ module "gitops_bootstrap" {
   gitops_values                       = local.stack.gitops
   gitops_repo_username                = var.gitops_repo_username
   gitops_repo_password                = var.gitops_repo_password
+  gitops_repo_token                   = var.gitops_repo_token
+  gitops_repo_token_username          = var.gitops_repo_token_username
 }

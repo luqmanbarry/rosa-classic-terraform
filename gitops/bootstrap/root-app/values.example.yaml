@@ -7,7 +7,7 @@ rootApplication:
 git:
   repoURL: https://github.com/your-org/rosa-classic-terraform.git
   targetRevision: main
-  username: ""
+  username: x-access-token
   password: ""
 bootstrapValues:
   clusterName: example-cluster

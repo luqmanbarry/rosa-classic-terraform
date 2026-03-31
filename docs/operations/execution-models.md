@@ -89,9 +89,12 @@ Use this pattern when GitHub is your source control and deployment runner.
   - `OCM_TOKEN`
   - `AWS_ROLE_TO_ASSUME` for OIDC, or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
   - optional `AWS_SESSION_TOKEN`
-  - optional Vault and private Git repo secrets when your stack needs them
+  - `GITOPS_REPO_TOKEN`
+  - optional Vault secrets when your stack needs them
+  - optional legacy `GITOPS_REPO_USERNAME` and `GITOPS_REPO_PASSWORD` only if token auth is not available yet
 - repository or environment variables:
   - `AWS_REGION`
+  - `GITOPS_REPO_TOKEN_USERNAME` with value `x-access-token` for GitHub
   - `TF_BACKEND_BUCKET`
   - `TF_BACKEND_REGION`
   - `TF_BACKEND_DYNAMODB_TABLE`
@@ -120,7 +123,7 @@ Current behavior:
   - writes backend config for each changed cluster
   - runs backend-backed `terraform plan`
   - uploads plan artifacts
-  - runs `terraform apply` only in the protected `rosa-classic-apply` environment
+  - runs `terraform apply` only in the protected `rosa-classic-apply` environment using the approved saved plan artifact
 - manual run:
   - supports `plan` or `apply`
   - can target one cluster with `workflow_dispatch` input `cluster_dir`
@@ -133,8 +136,8 @@ Current behavior:
 4. Configure AWS credentials.
 5. Write remote backend config for each changed cluster.
 6. Run `terraform plan`.
-7. Save rendered files and plan artifacts.
-8. After approval, run `terraform apply`.
+7. Save rendered files and the exact plan artifact.
+8. After approval, run `terraform apply` against that approved plan file.
 
 Use the shared runner in custom GitHub jobs:
 
@@ -161,12 +164,15 @@ Use this pattern when Azure DevOps is your approved enterprise runner.
 - agents with network access to AWS, ROSA, and your GitOps repo
 - secure pipeline variables or variable groups for:
   - `OCM_TOKEN`
-  - `AWS_ACCESS_KEY_ID`
-  - `AWS_SECRET_ACCESS_KEY`
+  - either `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+  - or `AWS_ROLE_ARN` and `AZURE_FEDERATED_TOKEN_FILE` for Azure-to-AWS federation
   - optional `AWS_SESSION_TOKEN`
-  - optional Vault and Git secrets when your stack needs them
+  - `GITOPS_REPO_TOKEN`
+  - optional Vault secrets when your stack needs them
+  - optional legacy `GITOPS_REPO_USERNAME` and `GITOPS_REPO_PASSWORD` only if token auth is not available yet
 - non-secret pipeline variables or variable groups for:
   - `AWS_REGION`
+  - `GITOPS_REPO_TOKEN_USERNAME` with value `x-access-token` for GitHub
   - `TF_BACKEND_BUCKET`
   - `TF_BACKEND_REGION`
   - `TF_BACKEND_DYNAMODB_TABLE`
@@ -186,8 +192,8 @@ Use this pattern when Azure DevOps is your approved enterprise runner.
 5. Run the docs and bug sweep.
 6. Write backend config for each changed cluster.
 7. Run `terraform plan`.
-8. Publish plan and render artifacts.
-9. Run `terraform apply` only after approval and only when `terraform_apply=true`.
+8. Publish the exact plan and render artifacts.
+9. Run `terraform apply` only after approval and only when `terraform_apply=true`, using the approved saved plan.
 
 This repo includes a production Azure pipeline at [`azure-pipelines.yml`](/Users/luqman/workspace/guides/rosa-classic-terraform/azure-pipelines.yml).
 

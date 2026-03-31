@@ -40,14 +40,28 @@ variable "managed_cluster_kubeconfig_filename" {
 }
 
 variable "gitops_repo_username" {
-  description = "Optional repository username for GitOps bootstrap."
+  description = "Optional repository username for legacy basic-auth GitOps bootstrap."
   type        = string
   default     = ""
   sensitive   = true
 }
 
 variable "gitops_repo_password" {
-  description = "Optional repository password or token for GitOps bootstrap."
+  description = "Optional repository password for legacy basic-auth GitOps bootstrap."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "gitops_repo_token" {
+  description = "Optional Git access token for GitOps bootstrap. Prefer a short-lived GitHub App installation token or PAT."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "gitops_repo_token_username" {
+  description = "Username paired with gitops_repo_token when the provider requires one. Use x-access-token for GitHub."
   type        = string
   default     = ""
   sensitive   = true
