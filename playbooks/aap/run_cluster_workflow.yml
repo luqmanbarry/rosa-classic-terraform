@@ -1,0 +1,42 @@
+---
+- name: Run ROSA Classic factory workflow
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    cluster_dir: clusters/dev/classic-100
+    artifact_dir: /tmp/rosa-classic-factory
+    workflow_mode: plan
+    terraform_backend: false
+
+  tasks:
+    - name: Validate requested workflow mode
+      ansible.builtin.assert:
+        that:
+          - workflow_mode in ["validate", "plan", "apply"]
+        fail_msg: "workflow_mode must be one of validate, plan, or apply."
+
+    - name: Run shared cluster workflow
+      ansible.builtin.command:
+        argv:
+          - bash
+          - scripts/run_cluster_workflow.sh
+          - --cluster-dir
+          - "{{ cluster_dir }}"
+          - --artifact-dir
+          - "{{ artifact_dir }}"
+          - --mode
+          - "{{ workflow_mode }}"
+          - --backend
+          - "{{ terraform_backend | ternary('true', 'false') }}"
+      environment:
+        TF_IN_AUTOMATION: "true"
+      register: workflow_run
+      changed_when: workflow_mode == "apply"
+
+    - name: Show workflow summary
+      ansible.builtin.debug:
+        msg:
+          - "Cluster dir: {{ cluster_dir }}"
+          - "Artifact dir: {{ artifact_dir }}"
+          - "Mode: {{ workflow_mode }}"

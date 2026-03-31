@@ -34,6 +34,22 @@ def load_yaml(path):
         return yaml.safe_load(handle) or {}
 
 
+def cluster_layout_parts(cluster_path):
+    try:
+        clusters_index = cluster_path.parts.index("clusters")
+    except ValueError as exc:
+        raise ValueError(f"{cluster_path} must live under the clusters/ directory") from exc
+
+    relative_parts = cluster_path.parts[clusters_index + 1 :]
+    if len(relative_parts) < 2:
+        raise ValueError(
+            "cluster files must use the layout clusters/<group>/<cluster-name>/; "
+            "the group can represent environment, region, business unit, or any mixed grouping"
+        )
+
+    return relative_parts
+
+
 def validate_cluster(cluster):
     missing = [key for key in REQUIRED_CLUSTER_KEYS if key not in cluster]
     if missing:
@@ -93,6 +109,12 @@ def main():
 
     cluster = load_yaml(cluster_path)
     validate_cluster(cluster)
+    cluster_parts = cluster_layout_parts(cluster_path.parent)
+
+    if cluster["cluster_name"] != cluster_parts[-1]:
+        raise ValueError(
+            f"cluster_name '{cluster['cluster_name']}' must match the cluster directory name '{cluster_parts[-1]}'"
+        )
 
     class_path = catalog_root / f"{cluster['class_name']}.yaml"
     if not class_path.exists():
@@ -103,6 +125,10 @@ def main():
 
     effective = deep_merge(cluster_class, cluster)
     effective["gitops"] = deep_merge(effective.get("gitops", {}), gitops)
+    effective["cluster_layout"] = {
+        "group_path": "/".join(cluster_parts[:-1]),
+        "cluster_directory_name": cluster_parts[-1],
+    }
     effective["source"] = {
       "cluster_file": str(cluster_path),
       "class_file": str(class_path),
@@ -113,6 +139,7 @@ def main():
         "cluster_name": effective["cluster_name"],
         "class_name": effective["class_name"],
         "environment": effective.get("environment"),
+        "group_path": effective["cluster_layout"]["group_path"],
         "aws_region": effective.get("aws_region"),
         "openshift_version": effective.get("openshift_version"),
     }

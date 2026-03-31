@@ -9,5 +9,7 @@ ignore-vars.sh
 ignore-vars-empty.sh
 *.out
 .DS_Store
+__pycache__/
+*.pyc
 out/
 rendered/

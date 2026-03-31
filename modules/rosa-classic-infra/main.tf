@@ -43,5 +43,3 @@ resource "aws_route53_zone" "base_dns_domain" {
 #   zone_id = aws_route53_vpc_association_authorization.vpc_route53_zone_authorization.zone_id
 #   vpc_id  = aws_route53_vpc_association_authorization.vpc_route53_zone_authorization.vpc_id
 # }
-
-# TODO: Add code to provision bastion host and apply inbound SG rules

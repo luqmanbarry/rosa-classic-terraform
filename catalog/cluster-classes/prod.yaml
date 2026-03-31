@@ -1,0 +1,29 @@
+environment: prod
+openshift_version: 4.15.9
+cluster:
+  create_account_roles: false
+  private: true
+  machine_type: m5.xlarge
+  worker_node_replicas: 3
+  autoscaling_enabled: true
+  min_replicas: 3
+  max_replicas: 9
+  pod_cidr: 172.128.0.0/14
+  service_cidr: 172.127.0.0/16
+gitops:
+  bootstrap_enabled: true
+  overlay: cluster-applications
+  namespace: openshift-gitops
+  operator_namespace: openshift-gitops-operator
+  channel: gitops-1.15
+  root_app_path: gitops/overlays/cluster-applications
+infrastructure:
+  create_aws_resources: false
+  single_nat_gateway: false
+acm:
+  enabled: false
+identity:
+  aws_workload_identity:
+    enabled: false
+    oidc_audience: sts.amazonaws.com
+    roles: {}

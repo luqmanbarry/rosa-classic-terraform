@@ -31,3 +31,7 @@ Source used for the starter shape:
 Docs:
 
 - https://docs.netapp.com/us-en/trident-2506/trident-get-started/openshift-operator-deploy.html
+
+Secrets:
+
+- Store any credentials that Trident needs in AWS Secrets Manager and sync them using ESO. Point the chart values at the ESO secret name instead of pasting credentials into Git.

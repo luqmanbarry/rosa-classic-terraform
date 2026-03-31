@@ -17,12 +17,30 @@ def fail(message):
     raise SystemExit(1)
 
 
+def validate_cluster_directory(cluster_dir):
+    parts = cluster_dir.parts
+
+    if "clusters" not in parts:
+        fail(f"{cluster_dir} must live under the clusters/ directory")
+
+    clusters_index = parts.index("clusters")
+    relative_parts = parts[clusters_index + 1 :]
+    if len(relative_parts) < 2:
+        fail(
+            f"{cluster_dir} must use the layout clusters/<group>/<cluster-name>/; "
+            "the group can be environment, region, business unit, or any mixed grouping"
+        )
+
+    return relative_parts
+
+
 def main():
     parser = argparse.ArgumentParser(description="Validate ROSA classic factory inputs.")
     parser.add_argument("--cluster-dir", required=True, help="Path to one cluster directory")
     args = parser.parse_args()
 
     cluster_dir = Path(args.cluster_dir)
+    relative_parts = validate_cluster_directory(cluster_dir)
     cluster_file = cluster_dir / "cluster.yaml"
     gitops_file = cluster_dir / "gitops.yaml"
     main_tf = cluster_dir / "main.tf"
@@ -33,6 +51,13 @@ def main():
 
     cluster = load_yaml(cluster_file)
     gitops = load_yaml(gitops_file)
+
+    cluster_name = cluster.get("cluster_name")
+    if cluster_name and cluster_name != relative_parts[-1]:
+        fail(
+            f"{cluster_file} cluster_name '{cluster_name}' must match the cluster directory name "
+            f"'{relative_parts[-1]}'"
+        )
 
     for key in ["cluster_name", "class_name", "aws_region", "network", "gitops"]:
         if key not in cluster:

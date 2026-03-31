@@ -32,3 +32,7 @@ Docs:
 
 - https://www.ibm.com/docs/en/spectrum-scale-csi?topic=sscsidc-operator-8
 - https://www.ibm.com/docs/en/spectrum-scale-csi?topic=i-installing-spectrum-scale-container-storage-interface-driver-using-operator-lifecycle-manager
+
+Secrets:
+
+- Keep any Spectrum Scale credentials in AWS Secrets Manager and sync them via ESO. Refer to the ESO secret name from your values files instead of committing raw credentials.

@@ -1,0 +1,162 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+variables:
+  python_version: '3.12'
+  terraform_version: '1.8.5'
+  cluster_dir: 'clusters/dev/classic-100'
+  artifact_dir: '$(Build.ArtifactStagingDirectory)/classic-100'
+  terraform_apply: 'false'
+
+stages:
+  - stage: Validate
+    displayName: Validate And Plan
+    jobs:
+      - job: validate_plan
+        displayName: Validate cluster stack
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(python_version)'
+
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: '$(terraform_version)'
+
+          - script: |
+              set -euo pipefail
+              sudo apt-get update
+              sudo apt-get install -y jq ripgrep
+            displayName: Install jq and ripgrep
+
+          - script: |
+              set -euo pipefail
+              curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+            displayName: Install Helm
+
+          - script: |
+              set -euo pipefail
+              curl -fsSL https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz -o /tmp/openshift-client-linux.tar.gz
+              tar -xzf /tmp/openshift-client-linux.tar.gz -C /tmp oc
+              sudo install /tmp/oc /usr/local/bin/oc
+              oc version --client
+            displayName: Install OpenShift CLI
+
+          - script: |
+              set -euo pipefail
+              chmod +x scripts/run_cluster_workflow.sh scripts/find_bugs_and_docs_issues.sh
+              scripts/run_cluster_workflow.sh \
+                --cluster-dir "$(cluster_dir)" \
+                --artifact-dir "$(artifact_dir)" \
+                --mode plan
+            displayName: Render and plan cluster
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(artifact_dir)'
+              artifact: 'cluster-artifacts'
+              publishLocation: pipeline
+
+  - stage: DocsAndBugs
+    displayName: Docs + Bug Sweep
+    dependsOn: Validate
+    jobs:
+      - job: sweep
+        displayName: Find docs and bug issues
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(python_version)'
+
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: '$(terraform_version)'
+
+          - script: |
+              set -euo pipefail
+              sudo apt-get update
+              sudo apt-get install -y jq ripgrep
+            displayName: Install jq and ripgrep
+
+          - script: |
+              set -euo pipefail
+              chmod +x scripts/find_bugs_and_docs_issues.sh
+              scripts/find_bugs_and_docs_issues.sh
+            displayName: Run docs/bug sweep
+
+  - stage: Apply
+    displayName: Apply
+    dependsOn: Validate
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['terraform_apply'], 'true'))
+    jobs:
+      - deployment: apply_cluster
+        displayName: Apply cluster stack
+        environment: rosa-classic-apply
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  fetchDepth: 0
+
+                - task: UsePythonVersion@0
+                  inputs:
+                    versionSpec: '$(python_version)'
+
+                - task: TerraformInstaller@1
+                  inputs:
+                    terraformVersion: '$(terraform_version)'
+
+                - script: |
+                    set -euo pipefail
+                    sudo apt-get update
+                    sudo apt-get install -y jq ripgrep
+                  displayName: Install jq and ripgrep
+
+                - script: |
+                    set -euo pipefail
+                    curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+                  displayName: Install Helm
+
+                - script: |
+                    set -euo pipefail
+                    curl -fsSL https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz -o /tmp/openshift-client-linux.tar.gz
+                    tar -xzf /tmp/openshift-client-linux.tar.gz -C /tmp oc
+                    sudo install /tmp/oc /usr/local/bin/oc
+                    oc version --client
+                  displayName: Install OpenShift CLI
+
+                - script: |
+                    set -euo pipefail
+                    chmod +x scripts/run_cluster_workflow.sh
+                    scripts/run_cluster_workflow.sh \
+                      --cluster-dir "$(cluster_dir)" \
+                      --artifact-dir "$(artifact_dir)" \
+                      --mode apply \
+                      --backend true
+                  displayName: Apply cluster
+
+                - task: PublishPipelineArtifact@1
+                  inputs:
+                    targetPath: '$(artifact_dir)'
+                    artifact: 'cluster-artifacts-apply'
+                    publishLocation: pipeline

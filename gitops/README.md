@@ -1,56 +1,37 @@
 # GitOps
 
-OpenShift GitOps manages normal cluster changes after Terraform finishes bootstrap.
+OpenShift GitOps keeps ROSA Classic cluster configuration in sync after Terraform bootstrap. The layout follows the same factory pattern used elsewhere in this repo: bootstrap, shared overlay, reusable platform charts, and reusable workload charts.
 
-Simple flow:
+## GitOps flow
 
-1. Terraform installs the OpenShift GitOps operator and creates a root `Application`.
-2. The root application points to `gitops/overlays/cluster-applications/`.
-3. The shared overlay creates the shared `platform` and `workloads` AppProjects.
-4. The shared overlay creates child Argo CD applications.
-5. Those child applications deploy platform and workload apps.
-
-Most reusable apps in this repo are Helm charts.
-
-The shared overlay is also a Helm chart. During bootstrap, Terraform passes in the Git repo URL, Git revision, cluster name, and cluster app list.
+1. Terraform installs the OpenShift GitOps operator and creates the root `Application`.
+2. The root app points to `gitops/overlays/cluster-applications/`.
+3. The shared overlay creates the `platform` and `workloads` AppProjects and their child applications.
+4. Each child application syncs a chart from `gitops/apps/platform` or `gitops/apps/workloads`.
 
 ## Argo CD model
 
-This repo uses one OpenShift GitOps operator per cluster.
+- One GitOps operator per cluster in `openshift-gitops`.
+- The admin Argo CD instance owns shared platform and workload applications.
+- `namespace-onboarding` can optionally create one shared tenant Argo CD instance for approved teams.
+- Tenant teams do not get their own GitOps operator.
 
-It uses one admin Argo CD instance in `openshift-gitops` for platform work:
+## GitOps modules
 
-- apps from `gitops/apps/platform`
-- apps from `gitops/apps/workloads`
-- the shared `platform` AppProject
-- the shared `workloads` AppProject
+- Secrets come from AWS Secrets Manager through External Secrets Operator.
+- Platform charts cover identity, RBAC, logging, monitoring, storage, service mesh, onboarding, and bootstrap operators.
+- Workload charts cover shared tenant-facing platforms such as AAP, OpenShift AI, and CP4BA.
+- `namespace-onboarding` can record namespace-level feature intent and access bindings for shared features such as service mesh, OpenShift AI, CP4BA, and AAP while leaving operator subscriptions under admin control.
+- Storage starters include NetApp Trident, Portworx, NFS CSI, IBM Spectrum Scale CSI, and static RWX provisioning.
+- Cost management and Red Hat Insights are opt-in and disabled by default.
 
-How to set up GitOps for one cluster:
+## Namespace policy
 
-- choose apps in `clusters/<environment>/<cluster>/gitops.yaml`
-- set `enabled: true` only for the apps you want to run now
-- put app values in `clusters/<environment>/<cluster>/values/<app>.yaml` when you need separate values files
-- use `namespace-onboarding` when you want shared tenant namespaces, quotas, RBAC, and optional tenant Argo CD setup
+- No chart should use the `default` namespace.
+- If a chart creates a namespace, that namespace must come from values so tenants can use their own namespace names.
 
-ROSA Classic notes:
+## Enabling apps
 
-- keep Terraform for ROSA, AWS, DNS, IAM, and cluster bootstrap
-- keep GitOps for normal cluster settings after the cluster is ready
-- use AWS Secrets Manager as the default shared secret backend
-- use Terraform to create optional AWS workload identity roles
-- use GitOps to annotate the matching Kubernetes `ServiceAccount` when an app should use one of those roles
-- use GitOps for vendor storage operators, CSI driver custom resources, and `StorageClass` objects
-- keep secret values out of Git
-- enable External Secrets style apps only when the operator and API level are supported on your ROSA Classic version
-
-When an app chart does not support `serviceAccount.annotations`, use `gitops/apps/platform/service-account-annotations/` to bind the role ARN to the target service account.
-
-For third-party storage, starter apps are included for NetApp Trident, Portworx, NFS CSI, and IBM Spectrum Scale CSI.
-
-## Layout
-
-- `bootstrap/openshift-gitops/`: installs the OpenShift GitOps operator
-- `bootstrap/root-app/`: creates the root `Application` for a cluster
-- `overlays/cluster-applications/`: builds the list of Argo CD applications for a cluster
-- `apps/platform/`: reusable platform applications
-- `apps/workloads/`: reusable workload applications
+- Each cluster selects apps in `clusters/<env>/<cluster>/gitops.yaml`.
+- Each app reads its values from `clusters/<env>/<cluster>/values/`.
+- Keep secrets out of Git. Store them in AWS Secrets Manager and sync them with ESO.

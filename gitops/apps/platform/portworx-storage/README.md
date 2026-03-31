@@ -26,3 +26,7 @@ Source used for the starter shape:
 Docs:
 
 - https://docs.portworx.com/portworx-enterprise/reference/CRD/storage-cluster
+
+Secrets:
+
+- Store any Portworx credentials in AWS Secrets Manager and read them through ESO. Wire the chart values to the ESO secret names instead of committing secrets to Git.

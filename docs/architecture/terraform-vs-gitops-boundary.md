@@ -28,6 +28,7 @@ Use this rule:
 - service account annotations that bind workloads to optional AWS workload identity roles
 - custom ingress controllers
 - workload operators and applications
+- Secrets live in AWS Secrets Manager (via ESO) instead of hardcoded YAML files.
 
 ## Exception
 

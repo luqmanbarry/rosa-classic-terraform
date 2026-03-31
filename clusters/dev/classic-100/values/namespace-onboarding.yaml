@@ -32,6 +32,19 @@ namespaces:
         role: edit
       - group: team-a-operators
         role: admin
+    features:
+      serviceMesh:
+        enabled: false
+        roleBindings:
+          - name: team-a-mesh-users
+            group: team-a-developers
+            role: mesh-user
+      openshiftAI:
+        enabled: false
+      cp4ba:
+        enabled: false
+      aap:
+        enabled: false
 sharedTenantArgoCD:
   enabled: false
   namespace: openshift-gitops-tenants

@@ -12,6 +12,7 @@ CLUSTER_DIR=""
 ARTIFACT_DIR=""
 MODE=""
 BACKEND="false"
+SKIP_TOOL_CHECK="${ROSA_FACTORY_SKIP_TOOL_CHECK:-false}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -57,7 +58,9 @@ case "$MODE" in
     ;;
 esac
 
-scripts/check_required_ci_tools.sh bash git jq python3 terraform helm rg oc
+if [[ "$SKIP_TOOL_CHECK" != "true" ]]; then
+  scripts/check_required_ci_tools.sh bash git jq python3 terraform helm rg oc
+fi
 
 mkdir -p "$ARTIFACT_DIR"
 

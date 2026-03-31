@@ -26,3 +26,7 @@ Source used for the starter shape:
 Docs:
 
 - https://kubernetes-csi.github.io/docs/drivers.html
+
+Secrets:
+
+- If the StorageClass needs credentials (for example, if it pulls from an ESO-synced secret) keep those secrets in AWS Secrets Manager and reference them via ESO names.

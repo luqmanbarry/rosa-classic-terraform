@@ -1,16 +1,43 @@
 # Clusters
 
-Each cluster gets its own folder:
+Each cluster gets its own folder under:
 
-`clusters/<environment>/<cluster-name>/`
+`clusters/<group>/<cluster-name>/`
 
-That folder contains:
+`<group>` is flexible. It can be:
+
+- an environment such as `dev`, `qa`, or `prod`
+- a region such as `us-east-1`
+- a mixed grouping such as `prod-us-east-1`
+- a team or business grouping when that fits your operating model
+
+Examples:
+
+- `clusters/dev/classic-100/`
+- `clusters/qa/classic-210/`
+- `clusters/prod-us-east-1/classic-310/`
+- `clusters/emea-prod/classic-410/`
+
+This means the repo supports:
+
+- multiple dev clusters
+- multiple qa clusters
+- multiple prod clusters
+- mixed environment and region grouping
+
+Each cluster folder contains:
 
 - `cluster.yaml`: human-authored cluster intent
 - `gitops.yaml`: GitOps app selection
 - `values/`: per-app Helm values used by `gitops.yaml`
 - `main.tf`: Terraform entrypoint for one cluster
 - `versions.tf`, `variables.tf`, `outputs.tf`: stack wiring
+
+Validation rules:
+
+- the folder must live under `clusters/`
+- the layout must end with `<group>/<cluster-name>/`
+- `cluster.yaml` key `cluster_name` must match the cluster directory name
 
 `cluster.yaml` also controls whether the repo should create the AWS foundation itself:
 

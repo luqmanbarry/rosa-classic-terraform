@@ -163,13 +163,6 @@ applications:
     syncWave: "70"
     valueFiles:
       - clusters/dev/classic-100/values/groups-rbac.yaml
-  - name: vault-k8s-auth
-    enabled: false
-    namespace: vault-auth
-    path: gitops/apps/platform/vault-k8s-auth
-    syncWave: "80"
-    valueFiles:
-      - clusters/dev/classic-100/values/vault-k8s-auth.yaml
   - name: oadp-operator
     enabled: false
     namespace: openshift-adp
@@ -233,3 +226,24 @@ applications:
     syncWave: "130"
     valueFiles:
       - clusters/dev/classic-100/values/openshift-virtualization-operator-bootstrap.yaml
+  - name: static-storage
+    enabled: false
+    namespace: tenant-storage
+    path: gitops/apps/platform/static-storage
+    syncWave: "200"
+    valueFiles:
+      - clusters/dev/classic-100/values/static-storage.yaml
+  - name: cost-management
+    enabled: false
+    namespace: cost-management
+    path: gitops/apps/platform/cost-management
+    syncWave: "210"
+    valueFiles:
+      - clusters/dev/classic-100/values/cost-management.yaml
+  - name: redhat-insights
+    enabled: false
+    namespace: openshift-redhat-insights
+    path: gitops/apps/platform/redhat-insights
+    syncWave: "215"
+    valueFiles:
+      - clusters/dev/classic-100/values/redhat-insights.yaml
