@@ -6,11 +6,13 @@ Use it when you want GitOps to create the namespace, `OperatorGroup`, `Subscript
 
 Safe defaults:
 
-- operator install plan approval is `Manual`
+- operator install plan approval is `Automatic`
 - automatic remediation is off
 - debug is off
 
 This is intentional. Compliance scans can be heavy, and automatic remediation should only be enabled after review.
+
+Automatic approval is used here because `compliance-content` depends on the Compliance Operator CRDs.
 
 Before you enable it:
 

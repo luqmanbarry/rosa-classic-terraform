@@ -3,7 +3,7 @@ clusterName: ""
 resourceCommonName: "stig-compliance"
 subscription:
   channel: stable
-  installPlanApproval: Manual
+  installPlanApproval: Automatic
 
 scanProfiles:
   - ocp4-stig
