@@ -32,6 +32,6 @@ OpenShift GitOps keeps ROSA Classic cluster configuration in sync after Terrafor
 
 ## Enabling apps
 
-- Each cluster selects apps in `clusters/<env>/<cluster>/gitops.yaml`.
-- Each app reads its values from `clusters/<env>/<cluster>/values/`.
+- Each cluster selects apps in `clusters/<group-path>/<cluster>/gitops.yaml`.
+- Each app reads its values from `clusters/<group-path>/<cluster>/values/`.
 - Keep secrets out of Git. Store them in AWS Secrets Manager and sync them with ESO.

@@ -43,8 +43,8 @@ def cluster_layout_parts(cluster_path):
     relative_parts = cluster_path.parts[clusters_index + 1 :]
     if len(relative_parts) < 2:
         raise ValueError(
-            "cluster files must use the layout clusters/<group>/<cluster-name>/; "
-            "the group can represent environment, region, business unit, or any mixed grouping"
+            "cluster files must use the layout clusters/<group-path>/<cluster-name>/; "
+            "group-path can be one or more levels such as env, region/env, bu/env, or failure-domain/env"
         )
 
     return relative_parts

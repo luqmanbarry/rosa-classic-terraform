@@ -27,8 +27,8 @@ def validate_cluster_directory(cluster_dir):
     relative_parts = parts[clusters_index + 1 :]
     if len(relative_parts) < 2:
         fail(
-            f"{cluster_dir} must use the layout clusters/<group>/<cluster-name>/; "
-            "the group can be environment, region, business unit, or any mixed grouping"
+            f"{cluster_dir} must use the layout clusters/<group-path>/<cluster-name>/; "
+            "group-path can be one or more levels such as env, region/env, bu/env, or failure-domain/env"
         )
 
     return relative_parts

@@ -1,1 +1,26 @@
-# Cost Management\n+\n+This chart installs Red Hat Cost Management and its `CostManagement` custom resource. It keeps everything disabled until you opt in so you can provide the operator subscription and the application CR at the right time.\n+\n+## How to enable\n+\n+1. Make sure you have the Red Hat entitlement for Cost Management.\n+2. Update `clusters/<env>/<cluster>/values/cost-management.yaml`:\n+   - Set `install.enabled: true` and confirm the namespace you want to use (the chart creates it if needed).\n+   - Set `app.enabled: true` to create the `CostManagement` custom resource.\n+3. Enable the chart in `gitops.yaml` and sync GitOps after the subscription becomes available.\n+\n+## Inputs\n+\n+- `install.namespace`: where the operator and subscription run.\n+- `install.subscriptionName`, `install.packageName`, and catalog source details for the Red Hat marketplace.\n+- `app.namespace` and `app.config`: configure the `CostManagement` CR once the operator is ready.\n+\n+## Prerequisites\n+\n+- Red Hat Cost Management entitlement and OperatorHub access to `redhat-cost-management`.\n+- AWS Secrets Manager and ESO for any credentials you might need; do not store secrets in Git.\n*** End Patch**
+# Cost Management
+
+This chart installs the Cost Management operator and can create the `CostManagement` custom resource.
+
+Keep it disabled until you are ready to subscribe the operator and create the app resource.
+
+## How To Enable
+
+1. Make sure your organization has the right entitlement for Cost Management.
+2. Update `clusters/<group-path>/<cluster>/values/cost-management.yaml`.
+3. Set `install.enabled: true` to install the operator.
+4. Set `app.enabled: true` when you are ready to create the `CostManagement` custom resource.
+5. Enable the app in `gitops.yaml`.
+
+## Main Inputs
+
+- `install.namespace`: namespace for the operator.
+- `install.subscriptionName`, `install.packageName`, `install.channel`: operator subscription settings.
+- `app.namespace`: namespace for the `CostManagement` custom resource.
+- `app.config`: app-specific settings.
+
+## Prerequisites
+
+- Red Hat Cost Management entitlement.
+- Access to the required OperatorHub catalog source.
+- AWS Secrets Manager and ESO for any credentials you do not want in Git.

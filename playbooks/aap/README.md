@@ -15,6 +15,7 @@ The playbook uses the shared script `scripts/run_cluster_workflow.sh`, so the AA
 
 ```bash
 ansible-playbook playbooks/aap/run_cluster_workflow.yml \
+  -e @docs/operations/aap-execution.example.yml \
   -e cluster_dir=clusters/dev/classic-100 \
   -e artifact_dir=/tmp/classic-100 \
   -e workflow_mode=plan \
@@ -26,3 +27,7 @@ ansible-playbook playbooks/aap/run_cluster_workflow.yml \
 - the execution environment must have `bash`, `git`, `jq`, `python3`, `terraform`, `helm`, `rg`, and `oc`
 - AWS credentials and `OCM_TOKEN` must be available to the job
 - if you use backend state, the backend credentials must also be available
+
+## Extra Vars File
+
+Use [`docs/operations/aap-execution.example.yml`](/Users/luqman/workspace/guides/rosa-classic-terraform/docs/operations/aap-execution.example.yml) as the base file for AAP job template extra vars.

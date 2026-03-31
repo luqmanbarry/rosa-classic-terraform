@@ -1,0 +1,70 @@
+cluster_name: classic-210
+class_name: qa
+aws_region: us-east-1
+business_metadata:
+  owner: qa-platform-team
+  business_unit: engineering
+  cost_center: "2020202020"
+network:
+  vpc_id: vpc-qa-use1-example
+  vpc_cidr_block: 10.80.0.0/16
+  private_subnet_ids:
+    - subnet-qa-use1-private-a
+    - subnet-qa-use1-private-b
+    - subnet-qa-use1-private-c
+  public_subnet_ids:
+    - subnet-qa-use1-public-a
+    - subnet-qa-use1-public-b
+    - subnet-qa-use1-public-c
+  availability_zones:
+    - us-east-1a
+    - us-east-1b
+    - us-east-1c
+  hosted_zone_id: ZQAUSE1EXAMPLE
+  base_dns_domain: qa.us-east-1.engineering.example.com
+  private_subnet_cidrs:
+    - 10.80.1.0/24
+    - 10.80.2.0/24
+    - 10.80.3.0/24
+  public_subnet_cidrs:
+    - 10.80.101.0/24
+    - 10.80.102.0/24
+    - 10.80.103.0/24
+cluster:
+  create_account_roles: false
+  private: false
+  machine_type: m5.xlarge
+  worker_node_replicas: 3
+  autoscaling_enabled: true
+  min_replicas: 3
+  max_replicas: 30
+  aws_additional_compute_security_group_ids:
+    - sg-0266862286fafbe20
+  aws_additional_control_plane_security_group_ids:
+    - sg-0266862286fafbe20
+  aws_additional_infra_security_group_ids:
+    - sg-0266862286fafbe20
+  default_mp_labels:
+    business_unit: engineering
+    cost_center: "2020202020"
+    red-hat-clustertype: rosa
+    team-maintainer: qa-platform-ops
+acm:
+  enabled: false
+  hub_cluster_name: noset
+infrastructure:
+  create_aws_resources: false
+identity:
+  aws_workload_identity:
+    enabled: false
+    roles:
+      external_secrets_operator:
+        namespace: external-secrets-operator
+        service_account: external-secrets-operator-controller-manager
+        description: AWS access role for External Secrets Operator.
+        managed_policy_arns:
+          - arn:aws:iam::aws:policy/SecretsManagerReadWrite
+gitops:
+  bootstrap_enabled: false
+  repository_url: https://github.com/your-org/rosa-classic-terraform.git
+  target_revision: main

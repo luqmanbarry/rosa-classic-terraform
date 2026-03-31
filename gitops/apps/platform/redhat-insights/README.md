@@ -1,1 +1,22 @@
-# Red Hat Insights\n+\n+This chart creates the `RedHatInsights` custom resource that connects the cluster to Insights.\n+\n+## How to enable\n+\n+1. Install the Insights Operator or make sure it is already in the cluster.\n+2. Store the Insights credentials in AWS Secrets Manager and sync them with ESO. The chart references the Secret using `insights.credentialsSecret`.\n+3. Enable the chart in `clusters/<env>/<cluster>/gitops.yaml` and set `enabled: true` in `clusters/<env>/<cluster>/values/redhat-insights.yaml`.\n+\n+## Inputs\n+\n+- `namespace`: where the Insights CR runs (`openshift-redhat-insights` by default).\n+- `insights.credentialsSecret`: ESO-managed Secret name that holds the credentials expected by the operator.\n+\n+## Prerequisites\n+\n+- Red Hat Insights entitlement for the cluster.\n+- An ESO-managed Secret with the credentials the Insights operator expects.\n*** End Patch**
+# Red Hat Insights
+
+This chart creates the `RedHatInsights` custom resource that connects the cluster to Insights.
+
+The chart is optional and disabled by default.
+
+## How To Enable
+
+1. Make sure the Insights operator is already available in the cluster.
+2. Store the required credentials in AWS Secrets Manager and sync them with ESO.
+3. Update `clusters/<group-path>/<cluster>/values/redhat-insights.yaml`.
+4. Enable the app in `gitops.yaml`.
+
+## Main Inputs
+
+- `namespace`: namespace where the Insights custom resource runs.
+- `insights.credentialsSecret`: name of the ESO-managed Secret with the required credentials.
+
+## Prerequisites
+
+- Red Hat Insights entitlement for the cluster.
+- An ESO-managed Secret with the credentials expected by the operator.

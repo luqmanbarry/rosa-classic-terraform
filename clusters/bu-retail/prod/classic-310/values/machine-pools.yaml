@@ -1,0 +1,85 @@
+# Best practice for ROSA Classic:
+# 1. Get one existing MachineSet from the cluster:
+#      oc get machineset -n openshift-machine-api -o yaml
+# 2. Copy one worker MachineSet into this file.
+# 3. Change the name, labels, replicas, VM size, and zone for the new pool.
+# 4. Keep the provider fields that describe the cluster image and network,
+#    then update only the parts that must be different for the new pool.
+# 5. Add a MachineAutoscaler entry if you want this pool to scale.
+#
+# This example is a more realistic starting point. It is commented out on
+# purpose so the sample cluster does not create extra worker pools by default.
+#
+# Example:
+# machineSets:
+#   - apiVersion: machine.openshift.io/v1beta1
+#     kind: MachineSet
+#     metadata:
+#       name: classic-100-extra-a-us-east-1a
+#       namespace: openshift-machine-api
+#       labels:
+#         machine.openshift.io/cluster-api-cluster: classic-100
+#       annotations:
+#         machine.openshift.io/GPU: "0"
+#     spec:
+#       replicas: 1
+#       selector:
+#         matchLabels:
+#           machine.openshift.io/cluster-api-cluster: classic-100
+#           machine.openshift.io/cluster-api-machineset: classic-100-extra-a-us-east-1a
+#       template:
+#         metadata:
+#           labels:
+#             machine.openshift.io/cluster-api-cluster: classic-100
+#             machine.openshift.io/cluster-api-machine-role: extra
+#             machine.openshift.io/cluster-api-machine-type: extra
+#             machine.openshift.io/cluster-api-machineset: classic-100-extra-a-us-east-1a
+#             workload.platform/example: "true"
+#         spec:
+#           metadata:
+#             labels:
+#               node-role.kubernetes.io/worker: ""
+#               workload.platform/example: "true"
+#           taints: []
+#           providerSpec:
+#             value:
+#               # Copy the provider spec from a real MachineSet in your cluster.
+#               # Do not hand-write the AWS provider block from scratch.
+
+# Notes:
+# - The exact provider fields come from your cluster. Copy them from a real
+#   MachineSet instead of guessing.
+# - The safest things to change are usually:
+#   - `metadata.name`
+#   - `spec.replicas`
+#   - machine set labels
+#   - node labels and taints
+#   - `vmSize`
+#   - `zone`
+# - Keep names in sync across:
+#   - `metadata.name`
+#   - `spec.selector.matchLabels.machine.openshift.io/cluster-api-machineset`
+#   - `spec.template.metadata.labels.machine.openshift.io/cluster-api-machineset`
+
+# Add one MachineAutoscaler per machine set if you want autoscaling.
+# Example:
+# machineAutoscalers:
+#   - apiVersion: autoscaling.openshift.io/v1beta1
+#     kind: MachineAutoscaler
+#     metadata:
+#       name: classic-100-extra-a
+#       namespace: openshift-machine-api
+#     spec:
+#       minReplicas: 1
+#       maxReplicas: 5
+#       scaleTargetRef:
+#         apiVersion: machine.openshift.io/v1beta1
+#         kind: MachineSet
+#         name: classic-100-extra-a-us-east-1a
+#
+# Notes:
+# - `scaleTargetRef.name` must match the MachineSet name exactly.
+# - The `ClusterAutoscaler` app must also be enabled for autoscaling to work.
+
+machineSets: []
+machineAutoscalers: []

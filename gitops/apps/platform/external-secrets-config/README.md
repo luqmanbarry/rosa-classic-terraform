@@ -36,7 +36,7 @@ Provider example snippets are in:
 - [examples/google-secret-manager.yaml](./examples/google-secret-manager.yaml)
 - [examples/cyberark-conjur.yaml](./examples/cyberark-conjur.yaml)
 
-Copy one example into `clusters/<env>/<cluster>/values/external-secrets-config.yaml` only if your platform does not use AWS Secrets Manager.
+Copy one example into `clusters/<group-path>/<cluster>/values/external-secrets-config.yaml` only if your platform does not use AWS Secrets Manager.
 
 The other provider examples are optional references.
 

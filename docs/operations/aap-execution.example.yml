@@ -1,0 +1,4 @@
+cluster_dir: clusters/dev/classic-100
+artifact_dir: /runner/artifacts/dev-classic-100
+workflow_mode: plan
+terraform_backend: false

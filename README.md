@@ -9,7 +9,7 @@ This repo builds and manages ROSA Classic clusters on AWS. The inputs live in Gi
 ## Repository layout
 
 - `catalog/`: shared defaults and cluster classes.
-- `clusters/`: one folder per cluster under `clusters/<group>/<name>/`, containing `cluster.yaml`, `gitops.yaml`, values, and Terraform entry points.
+- `clusters/`: one folder per cluster under `clusters/<group-path>/<name>/`, containing `cluster.yaml`, `gitops.yaml`, values, and Terraform entry points.
 - `modules/`: reusable Terraform modules, including the factory stack, optional AWS foundation, workload identity, ACM registration, and GitOps bootstrap.
 - `gitops/`: OpenShift GitOps bootstrap, shared overlay, and reusable `platform/` and `workload/` applications.
 - `playbooks/`: Ansible Automation Platform examples that call the shared workflow script.
@@ -18,7 +18,7 @@ This repo builds and manages ROSA Classic clusters on AWS. The inputs live in Gi
 
 ## How it works
 
-1. Write or update `cluster.yaml`, `gitops.yaml`, and any app values under `clusters/<group>/<name>/`.
+1. Write or update `cluster.yaml`, `gitops.yaml`, and any app values under `clusters/<group-path>/<name>/`.
 2. Render the effective config and validate with the tooling in `scripts/`.
 3. Run Terraform from that cluster folder. Terraform optionally builds the AWS account/VPC or uses customer-provided networking.
 4. Terraform boots OpenShift GitOps.
@@ -56,13 +56,15 @@ This repo builds and manages ROSA Classic clusters on AWS. The inputs live in Gi
 - `oc`, AWS credentials, and a Red Hat OCM token.
 - Access to the target GitOps repo and ESO for secrets.
 - Either an existing AWS network or permission for the repo to create the AWS foundation.
-- Flexible grouping under `clusters/`; the group can be environment, region, business unit, or a mixed label such as `prod-us-east-1`.
+- Flexible grouping under `clusters/`; `group-path` can be environment, region and environment, business unit and environment, failure domain and environment, or any other approved hierarchy.
 
 ## Read more
 
 - [Platform factory](docs/architecture/platform-factory.md)
 - [Terraform vs GitOps boundary](docs/architecture/terraform-vs-gitops-boundary.md)
 - [Execution models](docs/operations/execution-models.md)
+- [AAP extra vars example](docs/operations/aap-execution.example.yml)
+- [Tenant onboarding](docs/operations/tenant-onboarding.md)
 - [Catalog guidance](catalog/README.md)
 - [Clusters guidance](clusters/README.md)
 - [Terraform modules](modules/README.md)

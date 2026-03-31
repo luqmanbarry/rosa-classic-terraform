@@ -1,0 +1,22 @@
+pv:
+  enabled: false
+  name: static-pv
+  storageClassName: ""
+  capacity: 5Gi
+  accessModes:
+    - ReadWriteMany
+  reclaimPolicy: Retain
+  nfs:
+    server: nfs.example.com
+    path: /exports/static
+
+pvc:
+  enabled: false
+  name: static-pvc
+  namespace: tenant-storage
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi

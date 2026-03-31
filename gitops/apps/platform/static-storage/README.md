@@ -28,7 +28,7 @@ Secrets and credentials:
 
 Enabling the module:
 
-1. Fill in `clusters/<env>/<cluster>/values/static-storage.yaml` with the real NFS/CSI backend, namespaces, and Secrets.
+1. Fill in `clusters/<group-path>/<cluster>/values/static-storage.yaml` with the real NFS/CSI backend, namespaces, and Secrets.
 2. Set `pv.namespace` + `pvc.namespace` to the target tenant namespace.
 3. Change `pv.csi.enabled`/`pvc.enabled` to `true`.
 4. Enable the app in `gitops.yaml` and merge the change.

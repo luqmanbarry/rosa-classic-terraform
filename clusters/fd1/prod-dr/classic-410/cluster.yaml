@@ -1,0 +1,71 @@
+cluster_name: classic-410
+class_name: prod-dr
+aws_region: us-west-2
+business_metadata:
+  owner: retail-dr-platform-team
+  business_unit: retail
+  cost_center: "4040404040"
+  failure_domain: fd1
+network:
+  vpc_id: vpc-dr-usw2-example
+  vpc_cidr_block: 10.91.0.0/16
+  private_subnet_ids:
+    - subnet-dr-usw2-private-a
+    - subnet-dr-usw2-private-b
+    - subnet-dr-usw2-private-c
+  public_subnet_ids:
+    - subnet-dr-usw2-public-a
+    - subnet-dr-usw2-public-b
+    - subnet-dr-usw2-public-c
+  availability_zones:
+    - us-west-2a
+    - us-west-2b
+    - us-west-2c
+  hosted_zone_id: ZDRUSW2EXAMPLE
+  base_dns_domain: prod-dr.retail.example.com
+  private_subnet_cidrs:
+    - 10.91.1.0/24
+    - 10.91.2.0/24
+    - 10.91.3.0/24
+  public_subnet_cidrs:
+    - 10.91.101.0/24
+    - 10.91.102.0/24
+    - 10.91.103.0/24
+cluster:
+  create_account_roles: false
+  private: false
+  machine_type: m5.xlarge
+  worker_node_replicas: 3
+  autoscaling_enabled: true
+  min_replicas: 3
+  max_replicas: 30
+  aws_additional_compute_security_group_ids:
+    - sg-0266862286fafbe20
+  aws_additional_control_plane_security_group_ids:
+    - sg-0266862286fafbe20
+  aws_additional_infra_security_group_ids:
+    - sg-0266862286fafbe20
+  default_mp_labels:
+    business_unit: retail
+    cost_center: "4040404040"
+    red-hat-clustertype: rosa
+    team-maintainer: retail-dr-platform-ops
+acm:
+  enabled: false
+  hub_cluster_name: noset
+infrastructure:
+  create_aws_resources: false
+identity:
+  aws_workload_identity:
+    enabled: false
+    roles:
+      external_secrets_operator:
+        namespace: external-secrets-operator
+        service_account: external-secrets-operator-controller-manager
+        description: AWS access role for External Secrets Operator.
+        managed_policy_arns:
+          - arn:aws:iam::aws:policy/SecretsManagerReadWrite
+gitops:
+  bootstrap_enabled: false
+  repository_url: https://github.com/your-org/rosa-classic-terraform.git
+  target_revision: main

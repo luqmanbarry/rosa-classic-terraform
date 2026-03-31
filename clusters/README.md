@@ -2,28 +2,29 @@
 
 Each cluster gets its own folder under:
 
-`clusters/<group>/<cluster-name>/`
+`clusters/<group-path>/<cluster-name>/`
 
-`<group>` is flexible. It can be:
+`<group-path>` is flexible. It can be one level or many levels. It can represent:
 
 - an environment such as `dev`, `qa`, or `prod`
-- a region such as `us-east-1`
-- a mixed grouping such as `prod-us-east-1`
-- a team or business grouping when that fits your operating model
+- a region with environment under it such as `us-east-1/dev`
+- a business unit with environment under it such as `bu-retail/prod`
+- a failure domain with environment under it such as `fd1/prod-dr`
+- any other approved grouping that helps your operating model
 
 Examples:
 
 - `clusters/dev/classic-100/`
-- `clusters/qa/classic-210/`
-- `clusters/prod-us-east-1/classic-310/`
-- `clusters/emea-prod/classic-410/`
+- `clusters/us-east-1/qa/classic-210/`
+- `clusters/bu-retail/prod/classic-310/`
+- `clusters/fd1/prod-dr/classic-410/`
 
 This means the repo supports:
 
 - multiple dev clusters
 - multiple qa clusters
 - multiple prod clusters
-- mixed environment and region grouping
+- nested grouping such as region to env, business unit to env, and failure domain to env
 
 Each cluster folder contains:
 
@@ -36,8 +37,14 @@ Each cluster folder contains:
 Validation rules:
 
 - the folder must live under `clusters/`
-- the layout must end with `<group>/<cluster-name>/`
+- the layout must end with `<group-path>/<cluster-name>/`
 - `cluster.yaml` key `cluster_name` must match the cluster directory name
+
+Important rule:
+
+- the directory path is for human organization
+- the real automation inputs still live in `cluster.yaml`
+- keep fields such as environment, region, business unit, and failure-domain metadata in the YAML, not only in the folder name
 
 `cluster.yaml` also controls whether the repo should create the AWS foundation itself:
 

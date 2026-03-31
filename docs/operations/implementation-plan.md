@@ -11,7 +11,7 @@ This repo now follows the ARO Classic factory layout while keeping ROSA Classic 
 
 ## Day 1 (cluster automation)
 
-- Refine `clusters/<env>/<name>` inputs, including optional account creation, AWS workload identity, managed identity, ACM registration, and GitOps bootstrap settings. Keep any sensitive data out of Git and referenced through ESO-managed Secrets or Terraform variables.
+- Refine `clusters/<group-path>/<name>` inputs, including optional account creation, AWS workload identity, managed identity, ACM registration, and GitOps bootstrap settings. Keep any sensitive data out of Git and referenced through ESO-managed Secrets or Terraform variables.
 - Ensure the factory modules follow ROSA Classic contracts (account roles, OIDC, operator roles, cluster lifecycle) while leaving OpenShift GitOps for in-cluster config, mirroring the `terraform-vs-gitops-boundary` doc.
 - Include docs that explain how to run the Terraform stack from bastion, GitHub Actions, Ansible Automation Platform, or Azure Pipelines, reusing the patterns from the guides.
 
