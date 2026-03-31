@@ -7,11 +7,85 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      cluster_dir:
+        description: Cluster directory to plan or apply. Leave empty to use changed clusters.
+        required: false
+        type: string
+      mode:
+        description: Workflow mode for a manual run.
+        required: true
+        default: plan
+        type: choice
+        options:
+          - plan
+          - apply
+
+env:
+  PYTHON_VERSION: '3.12'
+  TERRAFORM_VERSION: '1.8.5'
+
+concurrency:
+  group: factory-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  validate:
-    if: github.event_name == 'pull_request'
+  detect:
     runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.changed.outputs.has_changes }}
+      matrix: ${{ steps.changed.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed clusters
+        id: changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x scripts/detect_changed_clusters.sh scripts/list_changed_clusters_json.sh
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.cluster_dir }}" ]]; then
+            MATRIX="$(scripts/list_changed_clusters_json.sh --cluster-dir "${{ github.event.inputs.cluster_dir }}")"
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            git fetch origin "${{ github.base_ref }}"
+            MATRIX="$(scripts/list_changed_clusters_json.sh \
+              --base-ref "origin/${{ github.base_ref }}" \
+              --head-ref "HEAD")"
+          else
+            BASE_REF="${{ github.event.before }}"
+            if [[ -z "$BASE_REF" || "$BASE_REF" == "0000000000000000000000000000000000000000" ]]; then
+              BASE_REF="$(git rev-parse HEAD~1)"
+            fi
+            MATRIX="$(scripts/list_changed_clusters_json.sh \
+              --base-ref "$BASE_REF" \
+              --head-ref "${{ github.sha }}")"
+          fi
+
+          COUNT="$(printf '%s' "$MATRIX" | jq '.include | length')"
+          {
+            echo "matrix<<EOF"
+            echo "$MATRIX"
+            echo "EOF"
+            if [[ "$COUNT" -gt 0 ]]; then
+              echo "has_changes=true"
+            else
+              echo "has_changes=false"
+            fi
+          } >> "$GITHUB_OUTPUT"
+
+  validate:
+    if: needs.detect.outputs.has_changes == 'true'
+    needs:
+      - detect
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,12 +95,12 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.8.5
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
@@ -44,55 +118,85 @@ jobs:
           chmod +x scripts/check_required_ci_tools.sh
           scripts/check_required_ci_tools.sh bash git jq python3 terraform helm rg oc
 
-      - name: Detect changed clusters
-        id: clusters
-        run: |
-          chmod +x scripts/detect_changed_clusters.sh
-          CHANGED="$(scripts/detect_changed_clusters.sh origin/${{ github.base_ref }} HEAD)"
-          {
-            echo 'changed<<EOF'
-            echo "$CHANGED"
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Render effective configs
-        run: |
-          mkdir -p .artifacts/pr
-          while IFS= read -r stack; do
-            [ -z "$stack" ] && continue
-            python3 scripts/validate_stack_inputs.py --cluster-dir "$stack"
-            out=".artifacts/pr/${stack//\//_}"
-            python3 scripts/render_effective_config.py \
-              --cluster "$stack/cluster.yaml" \
-              --gitops "$stack/gitops.yaml" \
-              --output-dir "$out"
-            cp "$out/terraform.auto.tfvars.json" "$stack/terraform.auto.tfvars.json"
-          done <<< "${{ steps.clusters.outputs.changed }}"
-
-      - name: Terraform fmt
-        run: terraform fmt -check clusters modules
-
-      - name: Terraform validate changed clusters
+      - name: Validate cluster stack
         env:
+          TF_IN_AUTOMATION: "true"
           TF_VAR_ocm_token: dummy
         run: |
-          while IFS= read -r stack; do
-            [ -z "$stack" ] && continue
-            terraform -chdir="$stack" init -backend=false
-            terraform -chdir="$stack" validate
-          done <<< "${{ steps.clusters.outputs.changed }}"
+          chmod +x scripts/run_cluster_workflow.sh
+          scripts/run_cluster_workflow.sh \
+            --cluster-dir "${{ matrix.cluster_dir }}" \
+            --artifact-dir ".artifacts/validate/${{ matrix.cluster_slug }}" \
+            --mode validate \
+            --backend false
 
-      - name: Upload PR artifacts
+      - name: Upload validation artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: pr-rendered-configs
-          path: .artifacts/pr
+          name: validate-${{ matrix.cluster_slug }}
+          path: .artifacts/validate/${{ matrix.cluster_slug }}
 
-  apply:
-    if: github.event_name == 'push'
+  docs_and_bugs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install jq and ripgrep
+        run: sudo apt-get update && sudo apt-get install -y jq ripgrep
+
+      - name: Run docs and bug sweep
+        run: |
+          chmod +x scripts/find_bugs_and_docs_issues.sh
+          scripts/find_bugs_and_docs_issues.sh
+
+  plan:
+    if: |
+      needs.detect.outputs.has_changes == 'true' &&
+      github.event_name != 'pull_request' &&
+      (
+        github.event_name == 'push' ||
+        (github.event_name == 'workflow_dispatch' && contains(fromJson('["plan","apply"]'), github.event.inputs.mode))
+      )
+    needs:
+      - detect
+      - validate
+      - docs_and_bugs
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
+    environment: rosa-classic-plan
+    env:
+      TF_IN_AUTOMATION: "true"
+      TF_VAR_ocm_token: ${{ secrets.OCM_TOKEN }}
+      TF_VAR_vault_token: ${{ secrets.VAULT_TOKEN }}
+      TF_VAR_vault_login_approle_role_id: ${{ secrets.VAULT_LOGIN_APPROLE_ROLE_ID }}
+      TF_VAR_vault_login_approle_secret_id: ${{ secrets.VAULT_LOGIN_APPROLE_SECRET_ID }}
+      TF_VAR_vault_addr: ${{ secrets.VAULT_ADDR }}
+      TF_VAR_gitops_repo_username: ${{ secrets.GITOPS_REPO_USERNAME }}
+      TF_VAR_gitops_repo_password: ${{ secrets.GITOPS_REPO_PASSWORD }}
+      TF_BACKEND_BUCKET: ${{ vars.TF_BACKEND_BUCKET }}
+      TF_BACKEND_REGION: ${{ vars.TF_BACKEND_REGION }}
+      TF_BACKEND_DYNAMODB_TABLE: ${{ vars.TF_BACKEND_DYNAMODB_TABLE }}
+      TF_BACKEND_KEY_PREFIX: ${{ vars.TF_BACKEND_KEY_PREFIX }}
+      TF_BACKEND_KMS_KEY_ID: ${{ vars.TF_BACKEND_KMS_KEY_ID }}
+      TF_BACKEND_ROLE_ARN: ${{ vars.TF_BACKEND_ROLE_ARN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -102,12 +206,12 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.8.5
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
@@ -120,53 +224,164 @@ jobs:
       - name: Install Python dependencies
         run: python3 -m pip install --upgrade pyyaml
 
-      - name: Check required CI tools
-        run: |
-          chmod +x scripts/check_required_ci_tools.sh
-          scripts/check_required_ci_tools.sh bash git jq python3 terraform helm rg oc
+      - name: Configure AWS credentials from OIDC
+        if: ${{ secrets.AWS_ROLE_TO_ASSUME != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: github-actions-rosa-classic-factory
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
 
-      - name: Detect changed clusters
-        id: clusters
-        run: |
-          chmod +x scripts/detect_changed_clusters.sh
-          CHANGED="$(scripts/detect_changed_clusters.sh HEAD~1 HEAD)"
-          {
-            echo 'changed<<EOF'
-            echo "$CHANGED"
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+      - name: Configure AWS credentials from repository secrets
+        if: ${{ secrets.AWS_ROLE_TO_ASSUME == '' && secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Render effective configs
+      - name: Validate CI secrets and backend variables
         run: |
-          mkdir -p .artifacts/apply
-          while IFS= read -r stack; do
-            [ -z "$stack" ] && continue
-            python3 scripts/validate_stack_inputs.py --cluster-dir "$stack"
-            out=".artifacts/apply/${stack//\//_}"
-            python3 scripts/render_effective_config.py \
-              --cluster "$stack/cluster.yaml" \
-              --gitops "$stack/gitops.yaml" \
-              --output-dir "$out"
-            cp "$out/terraform.auto.tfvars.json" "$stack/terraform.auto.tfvars.json"
-          done <<< "${{ steps.clusters.outputs.changed }}"
+          set -euo pipefail
+          test -n "$TF_VAR_ocm_token" || { echo "Missing OCM_TOKEN secret." >&2; exit 1; }
+          test -n "${{ vars.AWS_REGION }}" || { echo "Missing AWS_REGION variable." >&2; exit 1; }
+          test -n "$TF_BACKEND_BUCKET" || { echo "Missing TF_BACKEND_BUCKET variable." >&2; exit 1; }
+          test -n "$TF_BACKEND_REGION" || { echo "Missing TF_BACKEND_REGION variable." >&2; exit 1; }
+          test -n "$TF_BACKEND_DYNAMODB_TABLE" || { echo "Missing TF_BACKEND_DYNAMODB_TABLE variable." >&2; exit 1; }
+          test -n "${AWS_ACCESS_KEY_ID:-}" || { echo "AWS credentials were not configured." >&2; exit 1; }
 
-      - name: Terraform validate changed clusters
-        env:
-          TF_VAR_ocm_token: ${{ secrets.OCM_TOKEN }}
+      - name: Prepare backend config
         run: |
-          while IFS= read -r stack; do
-            [ -z "$stack" ] && continue
-            terraform -chdir="$stack" init -backend=false
-            terraform -chdir="$stack" validate
-          done <<< "${{ steps.clusters.outputs.changed }}"
+          chmod +x scripts/write_backend_config.sh
+          mkdir -p ".artifacts/plan/${{ matrix.cluster_slug }}"
+          scripts/write_backend_config.sh \
+            --cluster-dir "${{ matrix.cluster_dir }}" \
+            --output ".artifacts/plan/${{ matrix.cluster_slug }}/backend.hcl"
 
-      - name: Placeholder plan and apply stage
+      - name: Plan cluster stack
         run: |
-          echo "Wire backend config, cloud credentials, and apply gates here."
-          echo "Use the generated terraform.auto.tfvars.json in each changed stack root."
+          chmod +x scripts/run_cluster_workflow.sh
+          scripts/run_cluster_workflow.sh \
+            --cluster-dir "${{ matrix.cluster_dir }}" \
+            --artifact-dir ".artifacts/plan/${{ matrix.cluster_slug }}" \
+            --mode plan \
+            --backend true \
+            --backend-config-file ".artifacts/plan/${{ matrix.cluster_slug }}/backend.hcl"
+
+      - name: Upload plan artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: plan-${{ matrix.cluster_slug }}
+          path: .artifacts/plan/${{ matrix.cluster_slug }}
+
+  apply:
+    if: |
+      needs.detect.outputs.has_changes == 'true' &&
+      (
+        github.event_name == 'push' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'apply')
+      )
+    needs:
+      - detect
+      - plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
+    environment: rosa-classic-apply
+    env:
+      TF_IN_AUTOMATION: "true"
+      TF_VAR_ocm_token: ${{ secrets.OCM_TOKEN }}
+      TF_VAR_vault_token: ${{ secrets.VAULT_TOKEN }}
+      TF_VAR_vault_login_approle_role_id: ${{ secrets.VAULT_LOGIN_APPROLE_ROLE_ID }}
+      TF_VAR_vault_login_approle_secret_id: ${{ secrets.VAULT_LOGIN_APPROLE_SECRET_ID }}
+      TF_VAR_vault_addr: ${{ secrets.VAULT_ADDR }}
+      TF_VAR_gitops_repo_username: ${{ secrets.GITOPS_REPO_USERNAME }}
+      TF_VAR_gitops_repo_password: ${{ secrets.GITOPS_REPO_PASSWORD }}
+      TF_BACKEND_BUCKET: ${{ vars.TF_BACKEND_BUCKET }}
+      TF_BACKEND_REGION: ${{ vars.TF_BACKEND_REGION }}
+      TF_BACKEND_DYNAMODB_TABLE: ${{ vars.TF_BACKEND_DYNAMODB_TABLE }}
+      TF_BACKEND_KEY_PREFIX: ${{ vars.TF_BACKEND_KEY_PREFIX }}
+      TF_BACKEND_KMS_KEY_ID: ${{ vars.TF_BACKEND_KMS_KEY_ID }}
+      TF_BACKEND_ROLE_ARN: ${{ vars.TF_BACKEND_ROLE_ARN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Set up OpenShift CLI
+        uses: redhat-actions/oc-installer@v1
+        with:
+          version: latest
+
+      - name: Install Python dependencies
+        run: python3 -m pip install --upgrade pyyaml
+
+      - name: Configure AWS credentials from OIDC
+        if: ${{ secrets.AWS_ROLE_TO_ASSUME != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: github-actions-rosa-classic-factory
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
+      - name: Configure AWS credentials from repository secrets
+        if: ${{ secrets.AWS_ROLE_TO_ASSUME == '' && secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Validate CI secrets and backend variables
+        run: |
+          set -euo pipefail
+          test -n "$TF_VAR_ocm_token" || { echo "Missing OCM_TOKEN secret." >&2; exit 1; }
+          test -n "${{ vars.AWS_REGION }}" || { echo "Missing AWS_REGION variable." >&2; exit 1; }
+          test -n "$TF_BACKEND_BUCKET" || { echo "Missing TF_BACKEND_BUCKET variable." >&2; exit 1; }
+          test -n "$TF_BACKEND_REGION" || { echo "Missing TF_BACKEND_REGION variable." >&2; exit 1; }
+          test -n "$TF_BACKEND_DYNAMODB_TABLE" || { echo "Missing TF_BACKEND_DYNAMODB_TABLE variable." >&2; exit 1; }
+          test -n "${AWS_ACCESS_KEY_ID:-}" || { echo "AWS credentials were not configured." >&2; exit 1; }
+
+      - name: Prepare backend config
+        run: |
+          chmod +x scripts/write_backend_config.sh
+          mkdir -p ".artifacts/apply/${{ matrix.cluster_slug }}"
+          scripts/write_backend_config.sh \
+            --cluster-dir "${{ matrix.cluster_dir }}" \
+            --output ".artifacts/apply/${{ matrix.cluster_slug }}/backend.hcl"
+
+      - name: Apply cluster stack
+        run: |
+          chmod +x scripts/run_cluster_workflow.sh
+          scripts/run_cluster_workflow.sh \
+            --cluster-dir "${{ matrix.cluster_dir }}" \
+            --artifact-dir ".artifacts/apply/${{ matrix.cluster_slug }}" \
+            --mode apply \
+            --backend true \
+            --backend-config-file ".artifacts/apply/${{ matrix.cluster_slug }}/backend.hcl"
 
       - name: Upload apply artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: apply-rendered-configs
-          path: .artifacts/apply
+          name: apply-${{ matrix.cluster_slug }}
+          path: .artifacts/apply/${{ matrix.cluster_slug }}

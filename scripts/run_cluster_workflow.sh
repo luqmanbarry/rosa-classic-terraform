@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF' >&2
-usage: run_cluster_workflow.sh --cluster-dir <path> --artifact-dir <path> --mode <validate|plan|apply> [--backend true|false]
+usage: run_cluster_workflow.sh --cluster-dir <path> --artifact-dir <path> --mode <validate|plan|apply> [--backend true|false] [--backend-config-file <path>]
 EOF
 }
 
@@ -12,6 +12,7 @@ CLUSTER_DIR=""
 ARTIFACT_DIR=""
 MODE=""
 BACKEND="false"
+BACKEND_CONFIG_FILE=""
 SKIP_TOOL_CHECK="${ROSA_FACTORY_SKIP_TOOL_CHECK:-false}"
 
 while [[ $# -gt 0 ]]; do
@@ -30,6 +31,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --backend)
       BACKEND="${2:-}"
+      shift 2
+      ;;
+    --backend-config-file)
+      BACKEND_CONFIG_FILE="${2:-}"
       shift 2
       ;;
     *)
@@ -75,7 +80,11 @@ python3 scripts/render_effective_config.py \
 cp "$ARTIFACT_DIR/terraform.auto.tfvars.json" "$CLUSTER_DIR/terraform.auto.tfvars.json"
 
 if [[ "$BACKEND" == "true" ]]; then
-  terraform -chdir="$CLUSTER_DIR" init
+  if [[ -n "$BACKEND_CONFIG_FILE" ]]; then
+    terraform -chdir="$CLUSTER_DIR" init -backend-config="$BACKEND_CONFIG_FILE"
+  else
+    terraform -chdir="$CLUSTER_DIR" init
+  fi
 else
   terraform -chdir="$CLUSTER_DIR" init -backend=false
 fi

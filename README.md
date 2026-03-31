@@ -46,9 +46,9 @@ This repo builds and manages ROSA Classic clusters on AWS. The inputs live in Gi
 
 - **Bastion/CLI:** Render configs (Vault/ESO secrets) and run `terraform init`, `terraform plan -out=tfplan`, and `terraform apply tfplan` directly on a bastion or jump host.
 - **Bastion helper:** Use `scripts/run_cluster_workflow_bastion.sh` when you want a bastion-specific wrapper with sane artifact defaults.
-- **GitHub Actions:** Checkout the cluster folder, render/validate configs, pull secrets from AWS Secrets Manager using ESO credentials, and run Terraform plan/apply steps with a remote backend. Use GitHub secrets for `AWS_*` and `OCM_TOKEN`.
+- **GitHub Actions:** The repo includes a production workflow that detects changed clusters, validates PRs, generates remote backend config, uploads plan artifacts, and applies after environment approval. Use GitHub secrets and variables for AWS auth, `OCM_TOKEN`, backend state, and any optional Vault or Git credentials.
 - **Ansible Automation Platform (AAP):** Use `playbooks/aap/run_cluster_workflow.yml` to call the shared workflow script from an AAP job template.
-- **Azure Pipelines:** See `azure-pipelines.yml` for an example pipeline that renders configs, configures AWS/OCM/Vault service connections, runs `terraform plan`, and uploads artifacts.
+- **Azure Pipelines:** The repo includes a production pipeline that detects changed clusters, validates PRs, writes backend config, publishes plan artifacts, and applies only when `terraform_apply=true` and the apply environment is approved.
 - **Docs & bug sweep:** Run `scripts/find_bugs_and_docs_issues.sh` locally or in CI to catch `terraform fmt` regressions and unresolved marker words before they land in Git.
 
 ## Requirements

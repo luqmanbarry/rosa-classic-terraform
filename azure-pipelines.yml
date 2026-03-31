@@ -11,16 +11,72 @@ pr:
 variables:
   python_version: '3.12'
   terraform_version: '1.8.5'
-  cluster_dir: 'clusters/dev/classic-100'
-  artifact_dir: '$(Build.ArtifactStagingDirectory)/classic-100'
+  artifact_root: '$(Build.ArtifactStagingDirectory)'
   terraform_apply: 'false'
+  cluster_dir_override: ''
 
 stages:
-  - stage: Validate
-    displayName: Validate And Plan
+  - stage: Detect
+    displayName: Detect changed clusters
     jobs:
-      - job: validate_plan
-        displayName: Validate cluster stack
+      - job: detect_changed
+        displayName: Build cluster execution list
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - script: |
+              set -euo pipefail
+              chmod +x scripts/detect_changed_clusters.sh scripts/list_changed_clusters_json.sh
+
+              if [[ -n "$(cluster_dir_override)" ]]; then
+                matrix_json="$(scripts/list_changed_clusters_json.sh --cluster-dir "$(cluster_dir_override)" | jq -c '.')"
+              elif [[ "$(Build.Reason)" == "PullRequest" ]]; then
+                target_branch="$(System.PullRequest.TargetBranch)"
+                target_branch="${target_branch#refs/heads/}"
+                git fetch origin "$target_branch"
+                matrix_json="$(scripts/list_changed_clusters_json.sh \
+                  --base-ref "origin/${target_branch}" \
+                  --head-ref "HEAD" | jq -c '.')"
+              else
+                if git rev-parse HEAD~1 >/dev/null 2>&1; then
+                  base_ref="$(git rev-parse HEAD~1)"
+                else
+                  base_ref="$(git rev-parse HEAD)"
+                fi
+
+                matrix_json="$(scripts/list_changed_clusters_json.sh \
+                  --base-ref "$base_ref" \
+                  --head-ref "HEAD" | jq -c '.')"
+              fi
+
+              count="$(printf '%s' "$matrix_json" | jq '.include | length')"
+              clusters_csv="$(printf '%s' "$matrix_json" | jq -r '.include[].cluster_dir' | paste -sd ',' -)"
+
+              if [[ "$count" -gt 0 ]]; then
+                has_changes="true"
+              else
+                has_changes="false"
+              fi
+
+              echo "Changed clusters: ${clusters_csv:-none}"
+              echo "##vso[task.setvariable variable=changedClustersJson;isOutput=true]$matrix_json"
+              echo "##vso[task.setvariable variable=changedClustersCsv;isOutput=true]$clusters_csv"
+              echo "##vso[task.setvariable variable=hasChanges;isOutput=true]$has_changes"
+            displayName: Detect changed clusters
+            name: set_outputs
+
+  - stage: Validate
+    displayName: Validate changed clusters
+    dependsOn: Detect
+    condition: and(succeeded(), eq(stageDependencies.Detect.detect_changed.outputs['set_outputs.hasChanges'], 'true'))
+    variables:
+      changed_clusters_csv: $[ stageDependencies.Detect.detect_changed.outputs['set_outputs.changedClustersCsv'] ]
+    jobs:
+      - job: validate_clusters
+        displayName: Validate cluster stacks
         pool:
           vmImage: ubuntu-latest
         steps:
@@ -54,27 +110,40 @@ stages:
               oc version --client
             displayName: Install OpenShift CLI
 
+          - script: python3 -m pip install --upgrade pyyaml
+            displayName: Install Python dependencies
+
           - script: |
               set -euo pipefail
-              chmod +x scripts/run_cluster_workflow.sh scripts/find_bugs_and_docs_issues.sh
-              scripts/run_cluster_workflow.sh \
-                --cluster-dir "$(cluster_dir)" \
-                --artifact-dir "$(artifact_dir)" \
-                --mode plan
-            displayName: Render and plan cluster
+              chmod +x scripts/run_cluster_workflow.sh
+              IFS=',' read -r -a clusters <<< "$(changed_clusters_csv)"
+              for cluster_dir in "${clusters[@]}"; do
+                [[ -z "$cluster_dir" ]] && continue
+                cluster_slug="$(printf '%s' "$cluster_dir" | tr '/' '_')"
+                artifact_dir="$(artifact_root)/validate/${cluster_slug}"
+                scripts/run_cluster_workflow.sh \
+                  --cluster-dir "$cluster_dir" \
+                  --artifact-dir "$artifact_dir" \
+                  --mode validate \
+                  --backend false
+              done
+            displayName: Validate cluster stacks
+            env:
+              TF_IN_AUTOMATION: 'true'
+              TF_VAR_ocm_token: 'dummy'
 
           - task: PublishPipelineArtifact@1
             inputs:
-              targetPath: '$(artifact_dir)'
-              artifact: 'cluster-artifacts'
+              targetPath: '$(artifact_root)/validate'
+              artifact: 'validate-artifacts'
               publishLocation: pipeline
 
   - stage: DocsAndBugs
-    displayName: Docs + Bug Sweep
-    dependsOn: Validate
+    displayName: Docs and bug sweep
+    dependsOn: Detect
     jobs:
       - job: sweep
-        displayName: Find docs and bug issues
+        displayName: Run docs and bug sweep
         pool:
           vmImage: ubuntu-latest
         steps:
@@ -99,15 +168,131 @@ stages:
               set -euo pipefail
               chmod +x scripts/find_bugs_and_docs_issues.sh
               scripts/find_bugs_and_docs_issues.sh
-            displayName: Run docs/bug sweep
+            displayName: Run docs and bug sweep
+
+  - stage: Plan
+    displayName: Backend plan
+    dependsOn:
+      - Detect
+      - Validate
+      - DocsAndBugs
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(stageDependencies.Detect.detect_changed.outputs['set_outputs.hasChanges'], 'true'))
+    variables:
+      changed_clusters_csv: $[ stageDependencies.Detect.detect_changed.outputs['set_outputs.changedClustersCsv'] ]
+    jobs:
+      - job: plan_clusters
+        displayName: Plan changed cluster stacks
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(python_version)'
+
+          - task: TerraformInstaller@1
+            inputs:
+              terraformVersion: '$(terraform_version)'
+
+          - script: |
+              set -euo pipefail
+              sudo apt-get update
+              sudo apt-get install -y jq ripgrep
+            displayName: Install jq and ripgrep
+
+          - script: |
+              set -euo pipefail
+              curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+            displayName: Install Helm
+
+          - script: |
+              set -euo pipefail
+              curl -fsSL https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz -o /tmp/openshift-client-linux.tar.gz
+              tar -xzf /tmp/openshift-client-linux.tar.gz -C /tmp oc
+              sudo install /tmp/oc /usr/local/bin/oc
+              oc version --client
+            displayName: Install OpenShift CLI
+
+          - script: python3 -m pip install --upgrade pyyaml
+            displayName: Install Python dependencies
+
+          - script: |
+              set -euo pipefail
+              test -n "${AWS_ACCESS_KEY_ID:-}" || { echo "Missing AWS_ACCESS_KEY_ID secret variable." >&2; exit 1; }
+              test -n "${AWS_SECRET_ACCESS_KEY:-}" || { echo "Missing AWS_SECRET_ACCESS_KEY secret variable." >&2; exit 1; }
+              test -n "${OCM_TOKEN:-}" || { echo "Missing OCM_TOKEN secret variable." >&2; exit 1; }
+              test -n "${TF_BACKEND_BUCKET:-}" || { echo "Missing TF_BACKEND_BUCKET variable." >&2; exit 1; }
+              test -n "${TF_BACKEND_REGION:-}" || { echo "Missing TF_BACKEND_REGION variable." >&2; exit 1; }
+              test -n "${TF_BACKEND_DYNAMODB_TABLE:-}" || { echo "Missing TF_BACKEND_DYNAMODB_TABLE variable." >&2; exit 1; }
+            displayName: Validate backend and credential inputs
+            env:
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              AWS_SESSION_TOKEN: $(AWS_SESSION_TOKEN)
+              OCM_TOKEN: $(OCM_TOKEN)
+              TF_BACKEND_BUCKET: $(TF_BACKEND_BUCKET)
+              TF_BACKEND_REGION: $(TF_BACKEND_REGION)
+              TF_BACKEND_DYNAMODB_TABLE: $(TF_BACKEND_DYNAMODB_TABLE)
+
+          - script: |
+              set -euo pipefail
+              chmod +x scripts/run_cluster_workflow.sh scripts/write_backend_config.sh
+              IFS=',' read -r -a clusters <<< "$(changed_clusters_csv)"
+              for cluster_dir in "${clusters[@]}"; do
+                [[ -z "$cluster_dir" ]] && continue
+                cluster_slug="$(printf '%s' "$cluster_dir" | tr '/' '_')"
+                artifact_dir="$(artifact_root)/plan/${cluster_slug}"
+                mkdir -p "$artifact_dir"
+                scripts/write_backend_config.sh \
+                  --cluster-dir "$cluster_dir" \
+                  --output "$artifact_dir/backend.hcl"
+                scripts/run_cluster_workflow.sh \
+                  --cluster-dir "$cluster_dir" \
+                  --artifact-dir "$artifact_dir" \
+                  --mode plan \
+                  --backend true \
+                  --backend-config-file "$artifact_dir/backend.hcl"
+              done
+            displayName: Plan changed cluster stacks
+            env:
+              TF_IN_AUTOMATION: 'true'
+              AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+              AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+              AWS_SESSION_TOKEN: $(AWS_SESSION_TOKEN)
+              AWS_REGION: $(AWS_REGION)
+              TF_VAR_ocm_token: $(OCM_TOKEN)
+              TF_VAR_vault_token: $(VAULT_TOKEN)
+              TF_VAR_vault_login_approle_role_id: $(VAULT_LOGIN_APPROLE_ROLE_ID)
+              TF_VAR_vault_login_approle_secret_id: $(VAULT_LOGIN_APPROLE_SECRET_ID)
+              TF_VAR_vault_addr: $(VAULT_ADDR)
+              TF_VAR_gitops_repo_username: $(GITOPS_REPO_USERNAME)
+              TF_VAR_gitops_repo_password: $(GITOPS_REPO_PASSWORD)
+              TF_BACKEND_BUCKET: $(TF_BACKEND_BUCKET)
+              TF_BACKEND_REGION: $(TF_BACKEND_REGION)
+              TF_BACKEND_DYNAMODB_TABLE: $(TF_BACKEND_DYNAMODB_TABLE)
+              TF_BACKEND_KEY_PREFIX: $(TF_BACKEND_KEY_PREFIX)
+              TF_BACKEND_KMS_KEY_ID: $(TF_BACKEND_KMS_KEY_ID)
+              TF_BACKEND_ROLE_ARN: $(TF_BACKEND_ROLE_ARN)
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(artifact_root)/plan'
+              artifact: 'plan-artifacts'
+              publishLocation: pipeline
 
   - stage: Apply
     displayName: Apply
-    dependsOn: Validate
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['terraform_apply'], 'true'))
+    dependsOn:
+      - Detect
+      - Plan
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), eq(variables['terraform_apply'], 'true'), eq(stageDependencies.Detect.detect_changed.outputs['set_outputs.hasChanges'], 'true'))
+    variables:
+      changed_clusters_csv: $[ stageDependencies.Detect.detect_changed.outputs['set_outputs.changedClustersCsv'] ]
     jobs:
-      - deployment: apply_cluster
-        displayName: Apply cluster stack
+      - deployment: apply_clusters
+        displayName: Apply changed cluster stacks
         environment: rosa-classic-apply
         pool:
           vmImage: ubuntu-latest
@@ -145,18 +330,69 @@ stages:
                     oc version --client
                   displayName: Install OpenShift CLI
 
+                - script: python3 -m pip install --upgrade pyyaml
+                  displayName: Install Python dependencies
+
                 - script: |
                     set -euo pipefail
-                    chmod +x scripts/run_cluster_workflow.sh
-                    scripts/run_cluster_workflow.sh \
-                      --cluster-dir "$(cluster_dir)" \
-                      --artifact-dir "$(artifact_dir)" \
-                      --mode apply \
-                      --backend true
-                  displayName: Apply cluster
+                    test -n "${AWS_ACCESS_KEY_ID:-}" || { echo "Missing AWS_ACCESS_KEY_ID secret variable." >&2; exit 1; }
+                    test -n "${AWS_SECRET_ACCESS_KEY:-}" || { echo "Missing AWS_SECRET_ACCESS_KEY secret variable." >&2; exit 1; }
+                    test -n "${OCM_TOKEN:-}" || { echo "Missing OCM_TOKEN secret variable." >&2; exit 1; }
+                    test -n "${TF_BACKEND_BUCKET:-}" || { echo "Missing TF_BACKEND_BUCKET variable." >&2; exit 1; }
+                    test -n "${TF_BACKEND_REGION:-}" || { echo "Missing TF_BACKEND_REGION variable." >&2; exit 1; }
+                    test -n "${TF_BACKEND_DYNAMODB_TABLE:-}" || { echo "Missing TF_BACKEND_DYNAMODB_TABLE variable." >&2; exit 1; }
+                  displayName: Validate backend and credential inputs
+                  env:
+                    AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+                    AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+                    AWS_SESSION_TOKEN: $(AWS_SESSION_TOKEN)
+                    OCM_TOKEN: $(OCM_TOKEN)
+                    TF_BACKEND_BUCKET: $(TF_BACKEND_BUCKET)
+                    TF_BACKEND_REGION: $(TF_BACKEND_REGION)
+                    TF_BACKEND_DYNAMODB_TABLE: $(TF_BACKEND_DYNAMODB_TABLE)
+
+                - script: |
+                    set -euo pipefail
+                    chmod +x scripts/run_cluster_workflow.sh scripts/write_backend_config.sh
+                    IFS=',' read -r -a clusters <<< "$(changed_clusters_csv)"
+                    for cluster_dir in "${clusters[@]}"; do
+                      [[ -z "$cluster_dir" ]] && continue
+                      cluster_slug="$(printf '%s' "$cluster_dir" | tr '/' '_')"
+                      artifact_dir="$(artifact_root)/apply/${cluster_slug}"
+                      mkdir -p "$artifact_dir"
+                      scripts/write_backend_config.sh \
+                        --cluster-dir "$cluster_dir" \
+                        --output "$artifact_dir/backend.hcl"
+                      scripts/run_cluster_workflow.sh \
+                        --cluster-dir "$cluster_dir" \
+                        --artifact-dir "$artifact_dir" \
+                        --mode apply \
+                        --backend true \
+                        --backend-config-file "$artifact_dir/backend.hcl"
+                    done
+                  displayName: Apply changed cluster stacks
+                  env:
+                    TF_IN_AUTOMATION: 'true'
+                    AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+                    AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+                    AWS_SESSION_TOKEN: $(AWS_SESSION_TOKEN)
+                    AWS_REGION: $(AWS_REGION)
+                    TF_VAR_ocm_token: $(OCM_TOKEN)
+                    TF_VAR_vault_token: $(VAULT_TOKEN)
+                    TF_VAR_vault_login_approle_role_id: $(VAULT_LOGIN_APPROLE_ROLE_ID)
+                    TF_VAR_vault_login_approle_secret_id: $(VAULT_LOGIN_APPROLE_SECRET_ID)
+                    TF_VAR_vault_addr: $(VAULT_ADDR)
+                    TF_VAR_gitops_repo_username: $(GITOPS_REPO_USERNAME)
+                    TF_VAR_gitops_repo_password: $(GITOPS_REPO_PASSWORD)
+                    TF_BACKEND_BUCKET: $(TF_BACKEND_BUCKET)
+                    TF_BACKEND_REGION: $(TF_BACKEND_REGION)
+                    TF_BACKEND_DYNAMODB_TABLE: $(TF_BACKEND_DYNAMODB_TABLE)
+                    TF_BACKEND_KEY_PREFIX: $(TF_BACKEND_KEY_PREFIX)
+                    TF_BACKEND_KMS_KEY_ID: $(TF_BACKEND_KMS_KEY_ID)
+                    TF_BACKEND_ROLE_ARN: $(TF_BACKEND_ROLE_ARN)
 
                 - task: PublishPipelineArtifact@1
                   inputs:
-                    targetPath: '$(artifact_dir)'
-                    artifact: 'cluster-artifacts-apply'
+                    targetPath: '$(artifact_root)/apply'
+                    artifact: 'apply-artifacts'
                     publishLocation: pipeline
