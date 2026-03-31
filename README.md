@@ -1,165 +1,135 @@
-# ROSA Classic cluster automation
+# ROSA Classic Factory
 
-## Pre-Requisites
+This repo builds and manages ROSA Classic clusters.
 
-### Account Level
-- [Detailed List](https://docs.openshift.com/rosa/rosa_planning/rosa-sts-aws-prereqs.html)
+The main idea is simple:
 
-### Execution Level
-- ROSA Classic [enabled](https://docs.aws.amazon.com/rosa/latest/userguide/getting-started-sts-auto.html#getting-started-sts-auto-step-1) and accounts linked
-- IAM STS User with permission to:
-  - Create Operator Roles
-  - Create S3 Bucket (TF State Bucket)
-  - Create, Delete ROSA
-  - Create OIDC
-  - Add Route53 HostedZone records
-- VPC tagged with `cluster_name`
-- Private and/or Public Subnets tagged with `cluster_name`
-  - `x.x.x.x/24` CIDR for Multi-AZ
-  - `x.x.x.x/25` CIDR for Single-AZ
-  
-- Base DNS Domain name if you intend to deploy a custom `IngressController`
-- Additional Security Groups to apply to the cluster nodes (Master, Infra, Worker) tagged with `cluster_name`)
-- ROSA [OCM Token](https://console.redhat.com/openshift/token/rosa/show)
-- Cluster Name
-- A HashiCorp Vault instance
-- Vault Token or AppRole with permission to:
-  - Add a PKI engine Role
-  - Request TLS certificates
-  - Create KeyVault secrets
-  - Retrieve/Read KV secrets
-- Vault Paths for retrieving the following:
-  
-  - Identity Provider Details. Look at the [idp-idp_name.tf](./rosa-classic/) files for a guide.
-    
-    For example: GitLab IDP credentials are stored at vault path `kv/identity-providers/dev/gitlab` and the the secret data below.
-    ```json
-      {
-        "client_id": "<value>",
-        "client_secret": "<value>",
-        "gitlab_url": "https://gitlab.consulting.redhat.com/"
-      }
-    ```
+- cluster settings live in Git
+- Terraform builds AWS and ROSA resources
+- GitOps manages normal in-cluster config after bootstrap
 
-  - ACMHUB cluster credentials (api_url, username, password)
+## Repo Layout
 
-    For example: ACMHUB cluster credentials are stored at vault path `kv/acmhub/dev/<cluster-name>` and the secret data below.
-    ```json
-      {
-        "api_url": "https://api.example.p1.openshiftapps.com:6443",
-        "password": "<value>",
-        "username": "<value>"
-      }
-    ```
+- `catalog/`: shared defaults for clusters
+- `clusters/`: one folder per cluster
+- `modules/`: reusable Terraform modules
+- `gitops/`: OpenShift GitOps bootstrap and app charts
+- `scripts/`: render, validate, and helper scripts
+- `docs/`: short design docs
 
-  - OCM Token
-  
-    For example: The OCM token is stored at vault path `kv/rosa/ocm-token` and the secret data below.
-    ```json
-      {
-        "ocm_token": "<value>"
-      }
-    ```
+## How It Works
 
-  - Github/GitLab Authentication Token
-  
-    For Example: The Git token is stored at vault path `kv/git/github/pat` and the secret data below.
-    ```json
-      {
-        "git_token": "<value>"
-      }
-    ```
+1. Add or update a cluster folder under `clusters/<env>/<name>/`.
+2. Put cluster settings in `cluster.yaml`.
+3. Put GitOps app settings in `gitops.yaml`.
+4. Render and validate the config.
+5. Run Terraform from that cluster folder.
+6. Terraform builds the cluster and optional bootstrap parts.
+7. OpenShift GitOps applies normal day-2 cluster config from Git.
 
-### Software Packages
-- [GoLang](https://go.dev/doc/install) - 1.20.x or greater
-- [Terraform](https://developer.hashicorp.com/terraform/install#linux) 1.5.x or greater
-- [Openshift Client](https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest)
-- [rosa cli](https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/rosa/latest/)
-- [AWS CLI v2.x](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-- [jq](https://jqlang.github.io/jq/download/)
+## What Terraform Manages
 
-## Execution Flow
-![Rosa STS Stages](.assets/rosa-sts-modules.png)
+- optional AWS foundation such as VPC, subnets, Route53, and helper security groups
+- ROSA Classic account roles
+- ROSA Classic OIDC
+- ROSA Classic operator roles
+- ROSA Classic cluster lifecycle
+- optional AWS workload identity roles for service accounts
+- optional ACM registration bootstrap
+- OpenShift GitOps bootstrap
 
+## What GitOps Manages
 
-## Admin variables
+- identity providers and OAuth config
+- RBAC and group mappings
+- namespace and tenant onboarding
+- logging and monitoring
+- secret integration
+- service account annotations that consume optional workload identity roles
+- vendor storage operators, CSI config, and storage classes
+- custom ingress and other in-cluster platform config
+- operators and applications
 
-These are the cross-module [variables](./tfvars/admin/admin.tfvars) that are common across business units.
+## Cluster Input
 
-## User input variables
+Each cluster folder contains:
 
-[Variables](.ci/user-inputs.sh) the user provides during the execution of the pipeline.
+- `cluster.yaml`
+- `gitops.yaml`
+- `values/` for per-app Helm values
+- `main.tf`
+- `variables.tf`
+- `outputs.tf`
+- `versions.tf`
 
-## Derived variables
+`cluster.yaml` can use one of two network modes:
 
-These are the [variables](./tfvars-prep/variables.tf) that change based on user inputs.
+- `infrastructure.create_aws_resources: false`
+  Use existing VPC, subnets, and hosted zone.
+- `infrastructure.create_aws_resources: true`
+  Let this repo create the AWS foundation.
 
-## Terraform Modules
+`cluster.yaml` can also opt into AWS workload identity for service accounts:
 
-Listed in their order of precedence, they work together to provision a ROSA cluster, make necessary configurations and then register the cluster to ACM for day-2 configurations and management.
+- `identity.aws_workload_identity.enabled: false`
+  Do not create any IAM workload identity roles.
+- `identity.aws_workload_identity.enabled: true`
+  Create IAM roles and trust for the service accounts listed in `identity.aws_workload_identity.roles`.
 
-- [tfstate-config](./tfstate-config/): Create an S3 bucket for remote state storage.
-- [account-setup](./account-setup/): Create necessary AWS resources such as VPC, Subnets, NAT Gateways, Account Roles. Security Groups..etc. This module is optional if you choose to implement account setup through other means.
-- [tfvars-prep](./tfvars-prep/): Combine admin, user inputs, and dynamic variables into a master tfvars file. All subsequent modules will use the master tfvars file.
-- [git-tfvars-file](./git-tfvars-file/): Commit the master tfvars file to GitHub. Feel free to change the repo location to GitLab, BitBucket...etc.
-- [rosa-classic](./rosa-classic/): Creates the ROSA cluster, deploys two identity providers (GitHub, GitLab), and then writes the cluster-admin credentials to Vault.
-- [kube-config](./kube-config/): Create two `kubeconfig` files. One for the ROSA cluster and another for the ACMHUB cluster.
-- [custom-ingress](./custom-ingress/): Deploys an additional IngressController.
-- [vault-k8s-auth](./vault-k8s-auth/): Deploy the vault-kubernetes-authentication backend for apps running on the cluster to be able to read Vault secrets.
-- [acmhub-registration](./acmhub-registration/): Registers the ROSA cluster to  ACMHUB.
+This feature is split on purpose:
 
-## Implementation
+- Terraform creates the AWS IAM role and OIDC trust.
+- GitOps should annotate the matching Kubernetes `ServiceAccount` when an app uses that role.
 
-### Cluster Build
+For tenant onboarding and shared app team setup, use `gitops/apps/platform/namespace-onboarding/`.
 
-1. Have an OpenShift cluster with [ACM Deployed](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.10/html-single/install/index#installing-while-connected-online). We'll use this as the HUB cluster.
-2. A Vault instance. In this guide, [Vault is deployed](./.ci/vault-deploy.sh) in the same OpenShift cluster where ACM is running. The root token can be found in the **vault-init** `Secret` in the **vault** `Namespace`.
-3. Set the [admin](./tfvars//admin//admin.tfvars) variables. These are the variables that are common across all business units. Hence, setting them once should suffice.
-4. Set the [user-inputs](.ci/user-inputs.sh) variables. These change for each new cluster, or distinct business unit, or if you need to update existing clusters.
+## Quick Start
 
-    
-    ```sh
-    export AWS_ACCESS_KEY_ID='<value>'
-    export AWS_SECRET_ACCESS_KEY='<value>'
-    export AWS_REGION='us-east-1'
-    export TF_VAR_aws_account="<value>"
-    # Could gnerated by the user
-    export TF_VAR_vault_token="<value>"
-    # Vault Path: kv/rosa/ocm-token
-    export TF_VAR_ocm_token="<value>"
-    # Vault Path: kv/git/github/pat
-    export TF_VAR_git_token="<value>"
+Validate one cluster:
 
-    export TF_VAR_tfstate_s3_bucket_name="rosa-sts-tfstate"
-    export TF_VAR_cluster_name="rosa-class-101" # Max str length 15 characters
-    export TF_VAR_business_unit="market-rd"
-    export TF_VAR_cost_center="1010101010"
-    export TF_VAR_aws_region="us-east-1"
-    export TF_VAR_openshift_environment="dev"
-    export TF_VAR_base_dns_domain="non-prod.market-rd.example.com"
-    export TF_VAR_acmhub_cluster_name="noset"
-    export TF_VAR_ocp_version="4.15.5"
-    export TF_VAR_acmhub_cluster_env="dev"
-
-    export TF_VAR_create_account_roles=true # Set value to false if AWS account comes with account_roles already installed.
-    export TF_VAR_admin_creds_save_to_vault=false # Set value to true if you have vaut instance
-
-    export TF_LOG="info" # debug|info|trace
-    ```
-
-5. Now run the [pipeline script](.ci/pipeline-create.sh)
-
-    From the root directory, run the script. We could translate this shell script into a proper CICD process such as Jenkins, GitHub Actions, Tekton..etc; with sensitive variables read from Vault, or some secret engine. 
-    
-    For example, AWS credentials, OCM Token, Git Token, Vault Token could be set as environment variables via a plugin.
-
-    ```sh
-    .ci/pipeline-create.sh | tee rosa-classic-create.log
-    ```
-
-### Cluster Tear Down
-
-```sh
-.ci/pipeline-destroy.sh | tee rosa-classic-destroy.log
+```bash
+python3 scripts/validate_stack_inputs.py --cluster-dir clusters/dev/classic-100
 ```
 
+Render the effective config:
+
+```bash
+python3 scripts/render_effective_config.py \
+  --cluster clusters/dev/classic-100/cluster.yaml \
+  --gitops clusters/dev/classic-100/gitops.yaml \
+  --output-dir out/classic-100
+```
+
+Run Terraform from the cluster folder:
+
+```bash
+cd clusters/dev/classic-100
+terraform init
+terraform plan
+```
+
+## Requirements
+
+- Terraform
+- Python 3
+- `oc`
+- AWS credentials
+- Red Hat OCM token
+- access to the Git repo used by GitOps
+
+You also need either:
+
+- an existing AWS network and DNS setup
+
+or
+
+- permission for this repo to create the AWS foundation
+
+## Read More
+
+- [Platform Factory](/Users/luqman/workspace/guides/rosa-classic-terraform/docs/architecture/platform-factory.md)
+- [Terraform vs GitOps Boundary](/Users/luqman/workspace/guides/rosa-classic-terraform/docs/architecture/terraform-vs-gitops-boundary.md)
+- [Catalog](/Users/luqman/workspace/guides/rosa-classic-terraform/catalog/README.md)
+- [Clusters](/Users/luqman/workspace/guides/rosa-classic-terraform/clusters/README.md)
+- [Modules](/Users/luqman/workspace/guides/rosa-classic-terraform/modules/README.md)
+- [GitOps](/Users/luqman/workspace/guides/rosa-classic-terraform/gitops/README.md)

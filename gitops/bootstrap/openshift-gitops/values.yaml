@@ -1,0 +1,3 @@
+gitopsOperatorNamespace: openshift-gitops-operator
+gitopsNamespace: openshift-gitops
+gitopsChannel: gitops-1.15

@@ -1,0 +1,70 @@
+cluster_name: classic-100
+class_name: dev
+aws_region: us-east-1
+business_metadata:
+  owner: platform-team
+  business_unit: engineering
+  cost_center: "1010101010"
+network:
+  vpc_id: vpc-0f7ce52ca6081fdc6
+  vpc_cidr_block: 10.70.0.0/16
+  private_subnet_ids:
+    - subnet-06aea89d455007c13
+    - subnet-07e7c8d2ba9e9ca85
+    - subnet-0bf25dfb72df9c3d0
+  public_subnet_ids:
+    - subnet-00efa1fb183e85a81
+    - subnet-079ded4a3e174c46a
+    - subnet-0f301a2fc6b7ddc7b
+  availability_zones:
+    - us-east-1a
+    - us-east-1b
+    - us-east-1c
+  hosted_zone_id: Z04491713P0W73OOV5LV7
+  base_dns_domain: non-prod.engineering.example.com
+  private_subnet_cidrs:
+    - 10.70.1.0/24
+    - 10.70.2.0/24
+    - 10.70.3.0/24
+  public_subnet_cidrs:
+    - 10.70.101.0/24
+    - 10.70.102.0/24
+    - 10.70.103.0/24
+cluster:
+  create_account_roles: false
+  private: false
+  machine_type: m5.xlarge
+  worker_node_replicas: 3
+  autoscaling_enabled: true
+  min_replicas: 3
+  max_replicas: 30
+  aws_additional_compute_security_group_ids:
+    - sg-0266862286fafbe20
+  aws_additional_control_plane_security_group_ids:
+    - sg-0266862286fafbe20
+  aws_additional_infra_security_group_ids:
+    - sg-0266862286fafbe20
+  default_mp_labels:
+    business_unit: engineering
+    cost_center: "1010101010"
+    red-hat-clustertype: rosa
+    team-maintainer: platform-ops
+acm:
+  enabled: false
+  hub_cluster_name: noset
+infrastructure:
+  create_aws_resources: false
+identity:
+  aws_workload_identity:
+    enabled: false
+    roles:
+      external_secrets_operator:
+        namespace: external-secrets-operator
+        service_account: external-secrets-operator-controller-manager
+        description: AWS access role for External Secrets Operator.
+        managed_policy_arns:
+          - arn:aws:iam::aws:policy/SecretsManagerReadWrite
+gitops:
+  bootstrap_enabled: false
+  repository_url: https://github.com/your-org/rosa-classic-terraform.git
+  target_revision: main

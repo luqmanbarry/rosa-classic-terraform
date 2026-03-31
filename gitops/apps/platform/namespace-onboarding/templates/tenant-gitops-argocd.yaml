@@ -1,0 +1,77 @@
+{{- $shared := .Values.sharedTenantArgoCD | default dict }}
+{{- $tenants := .Values.tenants | default list }}
+{{- $instance := default (dict) $shared.instance }}
+{{- $server := default (dict) $instance.server }}
+{{- $controller := default (dict) $instance.controller }}
+{{- $repo := default (dict) $instance.repo }}
+{{- $redis := default (dict) $instance.redis }}
+{{- $applicationSet := default (dict) $instance.applicationSet }}
+{{- if $shared.enabled }}
+{{- $applicationNamespaces := list }}
+{{- $applicationSetNamespaces := list }}
+{{- range $tenant := $tenants }}
+{{- if $tenant.enabled }}
+{{- range $namespace := $tenant.namespaces }}
+{{- $applicationNamespaces = append $applicationNamespaces $namespace }}
+{{- if $tenant.allow_application_sets }}
+{{- $applicationSetNamespaces = append $applicationSetNamespaces $namespace }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ArgoCD
+metadata:
+  name: {{ $shared.instanceName }}
+  namespace: {{ $shared.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "33"
+spec:
+  resourceTrackingMethod: annotation+label
+  {{- with $server }}
+  server:
+    {{- with .route }}
+    route:
+{{ toYaml . | indent 6 }}
+    {{- end }}
+    {{- with .resources }}
+    resources:
+{{ toYaml . | indent 6 }}
+    {{- end }}
+  {{- end }}
+  {{- with $controller.resources }}
+  controller:
+    resources:
+{{ toYaml . | indent 6 }}
+  {{- end }}
+  {{- with $repo.resources }}
+  repo:
+    resources:
+{{ toYaml . | indent 6 }}
+  {{- end }}
+  {{- with $redis.resources }}
+  redis:
+    resources:
+{{ toYaml . | indent 6 }}
+  {{- end }}
+  {{- if $applicationNamespaces }}
+  sourceNamespaces:
+{{- range $namespace := uniq $applicationNamespaces }}
+    - {{ $namespace }}
+{{- end }}
+  {{- else }}
+  sourceNamespaces: []
+  {{- end }}
+  {{- if $applicationSetNamespaces }}
+  applicationSet:
+    {{- with $applicationSet.resources }}
+    resources:
+{{ toYaml . | indent 6 }}
+    {{- end }}
+    sourceNamespaces:
+{{- range $namespace := uniq $applicationSetNamespaces }}
+      - {{ $namespace }}
+{{- end }}
+  {{- end }}
+{{- end }}

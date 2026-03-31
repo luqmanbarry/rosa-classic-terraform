@@ -1,0 +1,19 @@
+secretStoreName: platform-secrets
+idp:
+  openid:
+    providers:
+      - type: AAD
+        enable: true
+        name: ActiveDirectory
+        clientID: changeme
+        clientSecretSecretName: openshift-classic-100-openid-client-secret
+        issuerURL: https://login.microsoftonline.com/TENANT_ID/v2.0
+      - type: KEYCLOAK
+        enable: true
+        name: KeyCloak
+        clientID: changeme
+        clientSecretSecretName: openshift-classic-100-keycloak-client-secret
+        issuerURL: https://keycloak-url/auth/realms/realm-name
+    oauthCertsConfigMapName: oauth-config-certs
+    enable: false
+  

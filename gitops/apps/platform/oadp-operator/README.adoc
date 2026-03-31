@@ -1,0 +1,17 @@
+= OADP on ROSA Classic
+
+This chart installs the OADP operator and creates a `DataProtectionApplication`.
+
+Default direction in this repo:
+
+* use AWS S3 for backup storage
+* use AWS snapshot support when your cluster setup supports it
+* source AWS credentials from a shared `ClusterSecretStore` through an `ExternalSecret`
+
+Related apps:
+
+* `oadp-operator`
+* `oadp-backup`
+* `oadp-restore`
+
+Before you enable it, review `values.yaml` and the sample cluster values.

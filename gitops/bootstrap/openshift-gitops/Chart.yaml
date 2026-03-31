@@ -1,0 +1,6 @@
+apiVersion: v2
+name: openshift-gitops
+description: OpenShift GitOps operator bootstrap for ROSA Classic.
+type: application
+version: 1.0.0
+appVersion: "1.15"

@@ -1,0 +1,76 @@
+---
+apiVersion: oadp.openshift.io/v1alpha1
+kind: DataProtectionApplication
+metadata:
+  name:  {{ .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  annotations:
+    managed-by: argocd.argoproj.io
+    # argocd.argoproj.io/sync-wave: "4"
+    # "helm.sh/hook": ""
+    "helm.sh/hook-weight": "4"
+    argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
+spec:
+  backupImages: true
+  configuration:
+    velero:
+      podConfig:
+        resourceAllocations:
+          limits:
+            cpu: "2"
+            memory: 6Gi
+          requests:
+            cpu: 250m
+            memory: 512Mi
+      resourceTimeout: 10m
+      client-burst: 1000
+      client-qps: 500
+      itemOperationSyncFrequency: "10s"
+      defaultItemOperationTimeout: 1h
+      defaultVolumesToFSBackup: {{ .Values.defaultVolumesToFsBackup }}
+      {{ if not .Values.defaultVolumesToFsBackup }}
+      defaultSnapshotMoveData: true
+      {{ end }}
+      defaultPlugins:
+        - aws
+        - openshift
+        - csi
+    nodeAgent:
+      enable: true
+      uploaderType: kopia
+      podConfig:
+        resourceAllocations:
+          limits:
+            cpu: "1"
+            memory: 4Gi
+          requests:
+            cpu: 50m
+            memory: 200Mi
+  backupLocations:
+    - name: "default"
+      velero:
+        provider: aws
+        default: true
+        backupSyncPeriod: 1m
+        config:
+          region: {{ .Values.storage.region }}
+        credential:
+          key: {{ .Values.veleroSecretKeyFile }}
+          name: {{ .Values.storage.credentialsSecretName | lower }}
+        objectStorage:
+          bucket: {{ .Values.storage.bucketName }}
+          prefix: {{ .Values.storage.bucketPrefix }}
+  snapshotLocations:
+    - name: "default"
+      velero:
+        provider: aws
+        default: true
+        config:
+          region: {{ .Values.storage.region }}
+        credential:
+          key: {{ .Values.veleroSecretKeyFile }}
+          name: {{ .Values.storage.credentialsSecretName | lower }}
+{{- if .Values.storage.volumeSnapshotClassName }}
+        volumeSnapshotClassName: {{ .Values.storage.volumeSnapshotClassName }}
+{{- end }}
+        snapshotLocation: {{ .Values.storage.region }}

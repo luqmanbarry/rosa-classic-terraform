@@ -1,0 +1,90 @@
+{{- $shared := .Values.sharedTenantArgoCD | default dict }}
+{{- $tenants := .Values.tenants | default list }}
+{{- if $shared.enabled }}
+{{- range $tenant := $tenants }}
+{{- if $tenant.enabled }}
+{{- $projectName := default $tenant.name $tenant.project_name }}
+{{- $sourceRepos := $tenant.source_repos | default list }}
+{{- $clusterResourceWhitelist := default $shared.clusterResourceWhitelist $tenant.cluster_resource_whitelist }}
+{{- $namespaceResourceBlacklist := default $shared.namespaceResourceBlacklist $tenant.namespace_resource_blacklist }}
+{{- $namespaceResourceWhitelist := $tenant.namespace_resource_whitelist }}
+{{- $deployerGroups := $tenant.developer_groups | default list }}
+{{- $adminGroups := $tenant.admin_groups | default list }}
+{{- $viewerGroups := $tenant.viewer_groups | default list }}
+{{- $allowApplicationSets := $tenant.allow_application_sets | default false }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ $projectName }}
+  namespace: {{ $shared.namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "34"
+spec:
+  description: {{ default (printf "Shared tenant project for %s" $tenant.name) $tenant.description | quote }}
+  sourceRepos:
+{{ toYaml $sourceRepos | indent 4 }}
+  destinations:
+{{- range $namespace := $tenant.namespaces }}
+    - namespace: {{ $namespace }}
+      server: https://kubernetes.default.svc
+{{- end }}
+  clusterResourceWhitelist:
+{{- if $clusterResourceWhitelist }}
+{{ toYaml $clusterResourceWhitelist | indent 4 }}
+{{- else }}
+    []
+{{- end }}
+  {{- if $namespaceResourceBlacklist }}
+  namespaceResourceBlacklist:
+{{ toYaml $namespaceResourceBlacklist | indent 4 }}
+  {{- end }}
+  {{- with $namespaceResourceWhitelist }}
+  namespaceResourceWhitelist:
+{{ toYaml . | indent 4 }}
+  {{- end }}
+  sourceNamespaces:
+{{- range $namespace := $tenant.namespaces }}
+    - {{ $namespace }}
+{{- end }}
+  roles:
+    - name: deployer
+      description: Tenant deployer role for {{ $tenant.name }}
+      groups:
+{{- range $group := $deployerGroups }}
+        - {{ $group }}
+{{- end }}
+{{- range $group := $adminGroups }}
+        - {{ $group }}
+{{- end }}
+      policies:
+{{- range $namespace := $tenant.namespaces }}
+        - p, proj:{{ $projectName }}:deployer, applications, get, {{ $projectName }}/{{ $namespace }}/*, allow
+        - p, proj:{{ $projectName }}:deployer, applications, create, {{ $projectName }}/{{ $namespace }}/*, allow
+        - p, proj:{{ $projectName }}:deployer, applications, update, {{ $projectName }}/{{ $namespace }}/*, allow
+        - p, proj:{{ $projectName }}:deployer, applications, delete, {{ $projectName }}/{{ $namespace }}/*, allow
+        - p, proj:{{ $projectName }}:deployer, applications, sync, {{ $projectName }}/{{ $namespace }}/*, allow
+        - p, proj:{{ $projectName }}:deployer, logs, get, {{ $projectName }}/{{ $namespace }}/*, allow
+{{- if $allowApplicationSets }}
+        - p, proj:{{ $projectName }}:deployer, applicationsets, get, {{ $projectName }}/{{ $namespace }}/*, allow
+        - p, proj:{{ $projectName }}:deployer, applicationsets, create, {{ $projectName }}/{{ $namespace }}/*, allow
+        - p, proj:{{ $projectName }}:deployer, applicationsets, update, {{ $projectName }}/{{ $namespace }}/*, allow
+        - p, proj:{{ $projectName }}:deployer, applicationsets, delete, {{ $projectName }}/{{ $namespace }}/*, allow
+{{- end }}
+{{- end }}
+    {{- with $viewerGroups }}
+    - name: viewer
+      description: Tenant viewer role for {{ $tenant.name }}
+      groups:
+{{- range $group := . }}
+        - {{ $group }}
+{{- end }}
+      policies:
+{{- range $namespace := $tenant.namespaces }}
+        - p, proj:{{ $projectName }}:viewer, applications, get, {{ $projectName }}/{{ $namespace }}/*, allow
+        - p, proj:{{ $projectName }}:viewer, logs, get, {{ $projectName }}/{{ $namespace }}/*, allow
+{{- end }}
+    {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

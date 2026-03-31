@@ -8,3 +8,6 @@ vault-
 ignore-vars.sh
 ignore-vars-empty.sh
 *.out
+.DS_Store
+out/
+rendered/

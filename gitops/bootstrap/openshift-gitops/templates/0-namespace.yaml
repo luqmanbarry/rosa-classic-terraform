@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.gitopsOperatorNamespace }}
+  labels:
+    openshift.io/cluster-monitoring: "true"
+  annotations:
+    managed-by: argocd.argoproj.io
+    helm.sh/hook-weight: "0"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec: {}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.gitopsNamespace }}
+  labels:
+    openshift.io/cluster-monitoring: "true"
+  annotations:
+    managed-by: argocd.argoproj.io
+    helm.sh/hook-weight: "0"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec: {}
