@@ -61,6 +61,14 @@ variable "gitops_repo_username" {
   description = "Optional repository username for legacy basic-auth bootstrap."
   default     = ""
   sensitive   = true
+
+  validation {
+    condition = (
+      trimspace(var.gitops_repo_username) == "" ||
+      trimspace(var.gitops_repo_token) == ""
+    )
+    error_message = "Set either gitops_repo_token or gitops_repo_username, not both."
+  }
 }
 
 variable "gitops_repo_password" {
@@ -68,6 +76,22 @@ variable "gitops_repo_password" {
   description = "Optional repository password for legacy basic-auth bootstrap."
   default     = ""
   sensitive   = true
+
+  validation {
+    condition = (
+      trimspace(var.gitops_repo_password) == "" ||
+      trimspace(var.gitops_repo_token) == ""
+    )
+    error_message = "Set either gitops_repo_token or gitops_repo_password, not both."
+  }
+
+  validation {
+    condition = (
+      (trimspace(var.gitops_repo_username) == "" && trimspace(var.gitops_repo_password) == "") ||
+      (trimspace(var.gitops_repo_username) != "" && trimspace(var.gitops_repo_password) != "")
+    )
+    error_message = "Legacy basic-auth bootstrap requires both gitops_repo_username and gitops_repo_password, or neither."
+  }
 }
 
 variable "gitops_repo_token" {
@@ -75,6 +99,14 @@ variable "gitops_repo_token" {
   description = "Optional Git access token for bootstrap. Prefer a short-lived GitHub App installation token or PAT over legacy basic auth."
   default     = ""
   sensitive   = true
+
+  validation {
+    condition = (
+      trimspace(var.gitops_repo_token) == "" ||
+      (trimspace(var.gitops_repo_username) == "" && trimspace(var.gitops_repo_password) == "")
+    )
+    error_message = "When gitops_repo_token is set, leave gitops_repo_username and gitops_repo_password empty."
+  }
 }
 
 variable "gitops_repo_token_username" {
