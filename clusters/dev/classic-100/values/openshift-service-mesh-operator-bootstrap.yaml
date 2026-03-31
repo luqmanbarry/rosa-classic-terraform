@@ -1,4 +1,4 @@
-clusterName: classic-100
+clusterName: ""
 secretStoreName: platform-secrets
 # Operator configuration
 operators:
@@ -8,7 +8,7 @@ operators:
     channel: stable
     source: redhat-operators
     sourceNamespace: openshift-marketplace
-    installPlanApproval: automatic
+    installPlanApproval: Manual
     config:
       resources:
         limits:
@@ -22,7 +22,7 @@ operators:
     channel: stable
     source: redhat-operators
     sourceNamespace: openshift-marketplace
-    installPlanApproval: automatic
+    installPlanApproval: Manual
     config:
       resources:
         limits:
@@ -36,7 +36,7 @@ operators:
     channel: stable
     source: redhat-operators
     sourceNamespace: openshift-marketplace
-    installPlanApproval: automatic
+    installPlanApproval: Manual
     config:
       resources:
         limits:
@@ -50,7 +50,7 @@ operators:
     channel: stable
     source: redhat-operators
     sourceNamespace: openshift-marketplace
-    installPlanApproval: automatic
+    installPlanApproval: Manual
     config:
       resources:
         limits:
@@ -59,56 +59,12 @@ operators:
       nodeSelector: {}
       tolerations: {}
     s3:
-      secretName: ossm-tempostack-traces
-      bucket: ossm-tempostack-traces
-      endpoint: s3.us-east-1.amazonaws.com
-      region: us-east-1
-      accessKeyIdRemoteRef: secret/ossm-tempostack-traces-access-key-id
-      secretAccessKeyRemoteRef: secret/ossm-tempostack-traces-secret-access-key
+      secretName: ""
+      bucket: ""
+      endpoint: ""
+      region: ""
+      accessKeyIdRemoteRef: ""
+      secretAccessKeyRemoteRef: ""
 
 # List of tenant namespaces and their SMCP configurations
-tenants:
-  - name: tenant1
-    smcp:
-      namespace: tenant1-mesh
-      version: v2.6
-      gateways:
-        enabled: true
-        ingress:
-          enabled: true
-        egress:
-          enabled: true
-        openshiftRoute:
-          enabled: false
-      jaeger:
-        enabled: true
-      kiali:
-        enabled: true
-      prometheus:
-        enabled: true
-      grafana:
-        enabled: true
-      mutualTLS:
-        enabled: true
-      rollMembers:
-        - warehouse
-        - point-of-sale
-        - shipping
-      rbac:
-        - roleKind: Role
-          roleName: istio-admin # OSSM defined role
-          subjectKind: Group
-          subjectName: tenant1-leads
-        - roleKind: Role
-          roleName: istio-admin # OSSM defined role
-          subjectKind: User
-          subjectName: luqmanbarry
-        - roleKind: Role
-          roleName: mesh-user # OSSM defined role (basic permissions)
-          subjectKind: User
-          subjectName: lbarry
-        - roleKind: ClusterRole
-          roleName: edit # OCP defined role (basic permissions)
-          subjectKind: ServiceAccount
-          subjectName: jenkins
-          subjectNamespace: jenkins
+tenants: []

@@ -1,3 +1,4 @@
+{{- if .Values.tenants }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -42,3 +43,4 @@ subjects:
   - kind: ServiceAccount
     name: otel-collector
     namespace: {{ .Values.operators.otel.namespace }}
+{{- end }}

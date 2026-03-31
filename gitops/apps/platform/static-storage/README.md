@@ -10,6 +10,15 @@ How it works:
 
 Default sample values keep everything disabled and offer placeholders for the backend host/path and claim settings.
 
+Safe defaults:
+
+- PV is off
+- PVC is off
+- NFS server and path are empty
+- PVC namespace is empty
+
+The chart fails fast if you enable it without the required backend path or tenant namespace.
+
 Use cases:
 
 1. An app team needs a RWX share that already exists on-prem but must be accessible from the ROSA cluster.

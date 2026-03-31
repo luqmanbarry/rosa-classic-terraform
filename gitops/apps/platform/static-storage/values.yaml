@@ -7,8 +7,8 @@ pv:
     - ReadWriteMany
   reclaimPolicy: Retain
   nfs:
-    server: nfs.example.com
-    path: /exports/static
+    server: ""
+    path: ""
   secretRef:
     name: ""
     namespace: ""

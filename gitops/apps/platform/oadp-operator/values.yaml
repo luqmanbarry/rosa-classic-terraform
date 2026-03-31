@@ -1,7 +1,8 @@
-clusterName: changeme
+clusterName: ""
 secretStoreName: platform-secrets
 namespace: openshift-adp
 subscriptionChannel: stable-1.4
+installPlanApproval: Manual
 
 veleroSecretKeyFile: cloud
 
@@ -10,8 +11,8 @@ defaultVolumesToFsBackup: true
 storage:
   provider: aws
   region: us-east-1
-  bucketName: rosa-classic-oadp
-  bucketPrefix: changeme
+  bucketName: ""
+  bucketPrefix: ""
   volumeSnapshotClassName: ""
   credentialsSecretName: oadp-aws-credentials
   accessKeyIdRemoteRef: secret/oadp-aws-access-key-id

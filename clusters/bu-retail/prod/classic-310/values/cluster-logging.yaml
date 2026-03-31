@@ -1,6 +1,8 @@
 secretStoreName: platform-secrets
-clusterName: changeme
 hecSecretName: splunk-logging-hec-token
+subscription:
+  channel: stable
+  installPlanApproval: Manual
 splunk:
-  endpoint: http://your.splunk.hec.url:8088/services/collector
+  endpoint: ""
   indexName: openshift

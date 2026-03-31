@@ -40,6 +40,7 @@ This repo builds and manages ROSA Classic clusters on AWS. The inputs live in Gi
 - Workload apps now follow the same Argo CD layout as ARO Classic: a shared overlay and reusable charts for every cluster.
 - Third-party storage starters include NetApp Trident, Portworx Storage, NFS CSI, IBM Spectrum Scale CSI, and the static RWX provisioning module. Each chart is disabled by default and expects cluster-specific secrets and CSI details.
 - Opt-in modules for cost management and Red Hat Insights are listed in `gitops/apps/platform` and have support details in their README files.
+- High-risk GitOps modules now default to safer production behavior for ROSA Classic: manual operator approval where appropriate, no example admin bindings or tenant meshes, and hard validation for required backend inputs.
 
 ## Execution patterns
 

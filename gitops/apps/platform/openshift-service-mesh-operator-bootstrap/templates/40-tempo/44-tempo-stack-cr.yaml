@@ -1,3 +1,4 @@
+{{- if and .Values.operators.tempo.s3.secretName .Values.operators.tempo.s3.bucket .Values.operators.tempo.s3.endpoint .Values.operators.tempo.s3.region }}
 # Source: https://github.com/grafana/tempo-operator/blob/main/docs/spec/tempo.grafana.com_tempostacks.yaml
 ---
 apiVersion: tempo.grafana.com/v1alpha1
@@ -73,3 +74,4 @@ spec:
         tenantId: {{ $rollMember | lower | sha256sum }}
     {{ end }}
     {{ end }}
+{{- end }}

@@ -6,6 +6,6 @@ storageClass:
   volumeBindingMode: Immediate
   mountOptions: []
   parameters:
-    server: nfs.example.com
-    share: /exports/k8s
+    server: ""
+    share: ""
   allowVolumeExpansion: true

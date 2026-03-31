@@ -16,7 +16,7 @@ spec:
   persistentVolumeReclaimPolicy: {{ .Values.pv.reclaimPolicy }}
   {{- if .Values.pv.csi.enabled }}
   csi:
-    driver: {{ .Values.pv.csi.driver }}
+    driver: {{ required "pv.csi.driver is required when pv.csi.enabled is true" .Values.pv.csi.driver }}
     {{- if .Values.pv.secretRef.name }}
     nodeStageSecretRef:
       name: {{ .Values.pv.secretRef.name }}
@@ -24,7 +24,7 @@ spec:
     {{- end }}
   {{- else }}
   nfs:
-    server: {{ .Values.pv.nfs.server }}
-    path: {{ .Values.pv.nfs.path }}
+    server: {{ required "pv.nfs.server is required when pv.enabled is true and pv.csi.enabled is false" .Values.pv.nfs.server }}
+    path: {{ required "pv.nfs.path is required when pv.enabled is true and pv.csi.enabled is false" .Values.pv.nfs.path }}
   {{- end }}
 {{- end }}

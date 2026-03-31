@@ -4,6 +4,13 @@ This chart configures OpenShift OAuth identity providers.
 
 It supports OpenID-based providers and reads client secrets from ESO-managed Kubernetes Secrets.
 
+Safe defaults:
+
+- OpenID is disabled by default.
+- The providers list is empty by default.
+
+This is intentional. The chart should not create an OAuth configuration until you provide real identity provider details.
+
 ## How To Enable
 
 1. Store the client secrets in AWS Secrets Manager.
@@ -14,7 +21,7 @@ It supports OpenID-based providers and reads client secrets from ESO-managed Kub
 ## Main Inputs
 
 - `idp.openid.enable`: turns OpenID identity providers on or off.
-- `idp.openid.providers[]`: provider definitions such as AAD or Keycloak.
+- `idp.openid.providers[]`: provider definitions such as AAD or Keycloak. Each provider must also set `enable: true` before the chart renders it.
 - `clientSecretSecretName`: name of the ESO-managed Secret with the client secret.
 - `oauthCertsConfigMapName`: config map name for custom CA certificates if needed.
 

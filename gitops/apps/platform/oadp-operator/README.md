@@ -4,6 +4,15 @@ This chart installs the OADP operator and creates the `DataProtectionApplication
 
 Secrets are expected from AWS Secrets Manager through ESO.
 
+Safe defaults:
+
+- install plan approval is `Manual`
+- bucket name is empty
+- bucket prefix is empty
+- volume snapshot hook runs only when `storage.volumeSnapshotClassName` is set
+
+The chart fails fast if you enable it without `storage.bucketName` and `storage.bucketPrefix`.
+
 ## How To Enable
 
 1. Create or choose the S3 bucket for backup data.

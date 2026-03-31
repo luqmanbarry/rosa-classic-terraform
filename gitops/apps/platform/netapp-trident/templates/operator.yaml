@@ -25,7 +25,7 @@ metadata:
   namespace: {{ .Values.operator.namespace }}
 spec:
   channel: {{ .Values.operator.channel }}
-  installPlanApproval: Automatic
+  installPlanApproval: {{ .Values.operator.installPlanApproval }}
   name: {{ .Values.operator.packageName }}
   source: {{ .Values.operator.source }}
   sourceNamespace: {{ .Values.operator.sourceNamespace }}

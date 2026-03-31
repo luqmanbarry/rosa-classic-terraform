@@ -16,5 +16,7 @@ spec:
   name: {{ .Values.operators.otel.name }}
   source: {{ .Values.operators.otel.source }}
   sourceNamespace: {{ .Values.operators.otel.sourceNamespace }}
+{{- with .Values.operators.otel.config }}
   config:
-    {{ toYaml .Values.operators.otel.config }}
+{{ toYaml . | indent 4 }}
+{{- end }}

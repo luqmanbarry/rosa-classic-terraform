@@ -22,4 +22,11 @@ Then update the cluster values file to set:
 - the shared store name
 - the secret name
 
+Safe defaults:
+
+- the secret name is empty by default
+- the update job runs daily
+
+The chart fails fast if you enable it without a real `pullSecretSecretName`.
+
 Keep this app disabled until the secret exists.

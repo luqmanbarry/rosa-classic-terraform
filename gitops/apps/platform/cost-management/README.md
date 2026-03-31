@@ -4,6 +4,12 @@ This chart installs the Cost Management operator and can create the `CostManagem
 
 Keep it disabled until you are ready to subscribe the operator and create the app resource.
 
+Safe defaults:
+
+- operator install is off
+- app creation is off
+- install plan approval is `Manual`
+
 ## How To Enable
 
 1. Make sure your organization has the right entitlement for Cost Management.

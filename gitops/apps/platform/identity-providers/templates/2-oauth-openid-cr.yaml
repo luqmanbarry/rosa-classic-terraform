@@ -12,6 +12,7 @@ metadata:
 spec:
   identityProviders:
   {{ range $openIDProvider := .Values.idp.openid.providers }}
+  {{- if $openIDProvider.enable }}
     - name: {{ $openIDProvider.name }}
       mappingMethod: claim
       type: OpenID
@@ -36,5 +37,6 @@ spec:
           groups: 
           - groups
         issuer: {{ $openIDProvider.issuerURL }}
+  {{- end }}
   {{ end }}
 {{ end }}

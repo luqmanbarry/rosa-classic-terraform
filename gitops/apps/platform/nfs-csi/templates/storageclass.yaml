@@ -1,4 +1,6 @@
 {{- if .Values.storageClass.enabled }}
+{{- $nfsServer := required "storageClass.parameters.server is required when nfs-csi storageClass is enabled" .Values.storageClass.parameters.server }}
+{{- $nfsShare := required "storageClass.parameters.share is required when nfs-csi storageClass is enabled" .Values.storageClass.parameters.share }}
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -13,7 +15,8 @@ reclaimPolicy: {{ .Values.storageClass.reclaimPolicy }}
 volumeBindingMode: {{ .Values.storageClass.volumeBindingMode }}
 allowVolumeExpansion: {{ .Values.storageClass.allowVolumeExpansion }}
 parameters:
-{{ toYaml .Values.storageClass.parameters | indent 2 }}
+  server: {{ $nfsServer }}
+  share: {{ $nfsShare }}
 {{- with .Values.storageClass.mountOptions }}
 mountOptions:
 {{ toYaml . | indent 2 }}

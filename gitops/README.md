@@ -24,6 +24,7 @@ OpenShift GitOps keeps ROSA Classic cluster configuration in sync after Terrafor
 - `namespace-onboarding` can record namespace-level feature intent and access bindings for shared features such as service mesh, OpenShift AI, CP4BA, and AAP while leaving operator subscriptions under admin control.
 - Storage starters include NetApp Trident, Portworx, NFS CSI, IBM Spectrum Scale CSI, and static RWX provisioning.
 - Cost management and Red Hat Insights are opt-in and disabled by default.
+- High-risk charts now use safer defaults: no example tenant resources, no default admin RBAC, manual install approval for optional operators, and fail-fast checks when required backend values are missing.
 
 ## Namespace policy
 

@@ -1,6 +1,11 @@
 {{- $virtualization := .Values | default dict }}
+{{- $support := $virtualization.support | default dict }}
 {{- $operator := $virtualization.operator | default dict }}
+{{- $hyperconverged := $virtualization.hyperconverged | default dict }}
 {{- if $virtualization.enabled }}
+{{- if not ($support.bareMetalWorkersConfirmed | default false) }}
+{{ fail "OpenShift Virtualization on ROSA Classic requires bare-metal worker instance types. Set support.bareMetalWorkersConfirmed=true only after you have confirmed the cluster meets that prerequisite." }}
+{{- end }}
 ---
 apiVersion: v1
 kind: Namespace
@@ -29,4 +34,24 @@ spec:
   name: {{ $operator.package_name }}
   source: {{ $operator.subscription_source }}
   sourceNamespace: {{ $operator.subscription_source_namespace }}
+---
+apiVersion: hco.kubevirt.io/v1beta1
+kind: HyperConverged
+metadata:
+  name: {{ $hyperconverged.name | default "kubevirt-hyperconverged" }}
+  namespace: {{ $hyperconverged.namespace | default $operator.namespace }}
+spec:
+  liveMigrationConfig:
+{{ toYaml ($hyperconverged.liveMigrationConfig | default dict) | indent 4 }}
+{{- with $hyperconverged.infra }}
+  infra:
+{{ toYaml . | indent 4 }}
+{{- end }}
+{{- with $hyperconverged.workloads }}
+  workloads:
+{{ toYaml . | indent 4 }}
+{{- end }}
+{{- with $hyperconverged.extraSpec }}
+{{ toYaml . | indent 2 }}
+{{- end }}
 {{- end }}

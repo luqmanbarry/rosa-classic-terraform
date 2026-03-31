@@ -25,7 +25,7 @@ spec:
       valuesObject:
         # Complete var list: https://github.com/signalfx/splunk-otel-collector-chart/blob/main/helm-charts/splunk-otel-collector/values.yaml
 
-        clusterName: {{ .Values.clusterName }} # REQUIRED
+        clusterName: {{ required "clusterName is required for splunk-log-forwarding" .Values.clusterName }}
         namespaceOverride: {{ .Values.namespaceOverride }}
         cloudProvider: {{ .Values.cloudProvider }} # {aws|azure|gke}
         distribution: {{ .Values.distribution }} # {eks, aks, eks/fargate,..}
@@ -35,8 +35,8 @@ spec:
         tracesEnabled: {{ .Values.tracesEnabled }}
 
         splunkPlatform:
-          endpoint: {{ .Values.splunkPlatform.endpoint }} # REQUIRED
-          index: {{ .Values.splunkPlatform.index }} # REQUIRED
+          endpoint: {{ required "splunkPlatform.endpoint is required for splunk-log-forwarding" .Values.splunkPlatform.endpoint }}
+          index: {{ required "splunkPlatform.index is required for splunk-log-forwarding" .Values.splunkPlatform.index }}
           insecureSkipVerify: {{ .Values.splunkPlatform.insecureSkipVerify }}
           source: {{ .Values.splunkPlatform.source }}
           maxConnections: {{ .Values.splunkPlatform.maxConnections }}

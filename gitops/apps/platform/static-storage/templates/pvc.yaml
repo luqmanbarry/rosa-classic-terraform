@@ -1,10 +1,11 @@
 {{- if .Values.pvc.enabled }}
+{{- $pvcNamespace := required "pvc.namespace is required when pvc.enabled is true" .Values.pvc.namespace }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Values.pvc.name }}
-  namespace: {{ .Values.pvc.namespace }}
+  namespace: {{ $pvcNamespace }}
   annotations:
     managed-by: argocd.argoproj.io
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true

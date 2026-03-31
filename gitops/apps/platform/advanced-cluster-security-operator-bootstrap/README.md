@@ -9,3 +9,4 @@ Before you enable it:
 - Up and running ROSA Classic cluster
 - approved operator version and channel
 - cluster sizing that fits ACS components
+- install plan approval is `Manual` by default so upgrades are reviewed

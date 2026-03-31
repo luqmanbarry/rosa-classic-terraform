@@ -4,6 +4,15 @@ This chart deploys the Splunk OpenTelemetry Collector through Argo CD and forwar
 
 Secrets are expected from AWS Secrets Manager through ESO.
 
+Safe defaults:
+
+- `clusterName` is empty
+- `splunkPlatform.endpoint` is empty
+- `splunkPlatform.index` is empty
+- proxy environment variables are empty
+
+The chart fails fast if you enable it without the required Splunk endpoint, index, and cluster name.
+
 ## How To Enable
 
 1. Store the Splunk HEC details in AWS Secrets Manager.

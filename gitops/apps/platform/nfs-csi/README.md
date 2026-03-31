@@ -6,7 +6,7 @@ Safe defaults:
 
 - the storage class is off by default
 - volume expansion is on
-- the NFS server and export path are placeholders
+- the NFS server and export path are empty
 
 Important note:
 
@@ -18,6 +18,8 @@ Good first step:
 1. install or confirm the NFS CSI driver
 2. set the NFS server and export path
 3. enable the storage class
+
+The chart fails fast if you enable the storage class without both values.
 
 Source used for the starter shape:
 

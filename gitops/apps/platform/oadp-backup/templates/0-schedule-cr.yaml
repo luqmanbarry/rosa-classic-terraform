@@ -24,7 +24,6 @@ spec:
     {{ if not $.Values.defaultVolumesToFsBackup }}
     snapshotMoveData: true
     {{ end }}
-    snapshotMoveData: true
     ttl: {{ $projectItem.backupRetentionPeriod }}
     includedNamespaces:
       - {{ $projectItem.namespace }}

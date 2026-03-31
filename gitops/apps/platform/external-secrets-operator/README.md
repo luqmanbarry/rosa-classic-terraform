@@ -21,5 +21,6 @@ For this repo, the default provider direction is AWS Secrets Manager on ROSA Cla
 
 - enable this only when the operator channel you choose is supported for your OpenShift and ROSA Classic version
 - the default subscription here uses the Red Hat operator package and `stable-v1`
+- the default install plan approval is `Manual` so upgrades stay under platform-team control
 
 Values are in [values.yaml](./values.yaml).

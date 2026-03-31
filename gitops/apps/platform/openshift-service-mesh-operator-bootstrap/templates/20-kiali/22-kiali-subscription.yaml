@@ -16,5 +16,7 @@ spec:
   name: {{ .Values.operators.kiali.name }}
   source: {{ .Values.operators.kiali.source }}
   sourceNamespace: {{ .Values.operators.kiali.sourceNamespace }}
+{{- with .Values.operators.kiali.config }}
   config:
-    {{ toYaml .Values.operators.kiali.config }}
+{{ toYaml . | indent 4 }}
+{{- end }}

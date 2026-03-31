@@ -4,6 +4,12 @@ This chart creates restore resources for OADP.
 
 Use it only after the backup source and OADP operator are already ready.
 
+Safe defaults:
+
+- restore is disabled by default
+- the backup list is empty by default
+- storage class mapping is empty by default
+
 ## How To Enable
 
 1. Make sure `oadp-operator` is installed and the target backup exists.

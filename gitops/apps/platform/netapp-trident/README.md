@@ -11,6 +11,7 @@ Safe defaults:
 
 - operator install is off
 - `TridentOrchestrator` is off
+- operator install plan approval is `Manual`
 
 Why these defaults are off:
 

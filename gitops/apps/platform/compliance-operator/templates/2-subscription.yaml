@@ -11,8 +11,8 @@ metadata:
     "helm.sh/hook-weight": "2"
     argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
 spec:
-  channel: "stable"
-  installPlanApproval: Automatic
+  channel: {{ .Values.subscription.channel | quote }}
+  installPlanApproval: {{ .Values.subscription.installPlanApproval }}
   name: compliance-operator
   source: redhat-operators
   sourceNamespace: openshift-marketplace

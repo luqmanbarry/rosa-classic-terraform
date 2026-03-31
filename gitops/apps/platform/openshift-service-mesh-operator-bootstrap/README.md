@@ -4,6 +4,14 @@ This chart installs the shared service mesh platform pieces for ROSA Classic.
 
 It can install the Service Mesh operator, Kiali, OpenTelemetry, and Tempo, then create tenant-specific mesh control plane resources from values.
 
+Safe defaults:
+
+- operator install plan approval is `Manual` for all four operators
+- `tenants` is empty by default
+- Tempo object storage settings are empty by default
+
+This is intentional. The chart installs the shared operator layer safely, but it does not create tenant meshes or Tempo storage objects until the platform team provides real values.
+
 ## How To Enable
 
 1. Review whether your platform team wants shared or tenant-specific mesh control planes.
@@ -26,3 +34,7 @@ It can install the Service Mesh operator, Kiali, OpenTelemetry, and Tempo, then 
 ## Support Note
 
 Keep operator lifecycle admin-managed. Tenant teams should opt into mesh use through approved namespaces and RBAC, not by creating their own operator subscriptions.
+
+Tempo note:
+
+- If Tempo S3 settings are empty, the Tempo `ExternalSecret` and `TempoStack` resources are not created.

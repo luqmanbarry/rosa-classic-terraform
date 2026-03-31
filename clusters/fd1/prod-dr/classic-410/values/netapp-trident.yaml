@@ -5,6 +5,7 @@ operator:
   subscriptionName: trident-operator
   packageName: trident-operator
   channel: stable
+  installPlanApproval: Manual
   source: redhat-operators
   sourceNamespace: openshift-marketplace
 

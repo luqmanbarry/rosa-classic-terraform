@@ -2,21 +2,36 @@ pv:
   enabled: false
   name: static-pv
   storageClassName: ""
-  capacity: 5Gi
+  capacity: 10Gi
   accessModes:
     - ReadWriteMany
   reclaimPolicy: Retain
   nfs:
-    server: nfs.example.com
-    path: /exports/static
+    server: ""
+    path: ""
+  secretRef:
+    name: ""
+    namespace: ""
+  csi:
+    enabled: false
+    driver: ""
+    nodeStageSecretRef:
+      name: ""
+      namespace: ""
 
 pvc:
   enabled: false
   name: static-pvc
-  namespace: tenant-storage
+  namespace: ""
   storageClassName: ""
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 5Gi
+      storage: 10Gi
+
+claimSecret:
+  enabled: false
+  name: static-secret
+  namespace: ""
+  data: {}

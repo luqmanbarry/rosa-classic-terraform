@@ -20,7 +20,7 @@ metadata:
   namespace: {{ .Values.install.namespace }}
 spec:
   channel: {{ .Values.install.channel }}
-  installPlanApproval: Automatic
+  installPlanApproval: {{ .Values.install.installPlanApproval }}
   name: {{ .Values.install.packageName }}
   source: {{ .Values.install.source }}
   sourceNamespace: {{ .Values.install.sourceNamespace }}

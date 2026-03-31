@@ -4,6 +4,14 @@ This chart updates the cluster image policy so you can allow only approved regis
 
 It can also install trusted CA certificates for private registries.
 
+Safe defaults:
+
+- no pull secret is configured by default
+- no trusted CA bundle is configured by default
+- the registry CA copy job runs daily, not every five minutes
+
+The chart still keeps a conservative allow list for common registries, but private registry details stay empty until you add them.
+
 ## How To Enable
 
 1. Store the pull secret and any registry CA data in AWS Secrets Manager.
@@ -22,3 +30,4 @@ It can also install trusted CA certificates for private registries.
 
 - ESO-managed Secrets for the pull secret and any CA bundles.
 - A reviewed allow list. This chart blocks registries by default unless you allow them.
+- If you do not use private registry CA bundles, leave `registriesTrustedCerts` empty. The ESO CA secret and copy job will not be created.

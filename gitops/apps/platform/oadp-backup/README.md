@@ -2,6 +2,13 @@
 
 This chart creates scheduled OADP backups after the OADP operator is already installed and configured.
 
+Safe defaults:
+
+- the chart is disabled by default
+- the project list is empty by default
+
+This is intentional. No backup schedules are created until you add real namespaces and schedules.
+
 ## How To Enable
 
 1. Install and configure `oadp-operator` first.

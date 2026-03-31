@@ -16,5 +16,7 @@ spec:
   name: {{ .Values.operators.servicemesh.name }}
   source: {{ .Values.operators.servicemesh.source }}
   sourceNamespace: {{ .Values.operators.servicemesh.sourceNamespace }}
+{{- with .Values.operators.servicemesh.config }}
   config:
-    {{ toYaml .Values.operators.servicemesh.config }}
+{{ toYaml . | indent 4 }}
+{{- end }}

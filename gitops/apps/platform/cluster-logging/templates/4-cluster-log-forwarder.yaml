@@ -16,7 +16,7 @@ spec:
       secret:
         name: {{ .Values.hecSecretName }}
       type: splunk 
-      url: {{ .Values.splunk.endpoint }}
+      url: {{ required "splunk.endpoint is required for cluster-logging" .Values.splunk.endpoint }}
       splunk:
         indexName: {{ .Values.splunk.indexName }}
   pipelines: 

@@ -9,8 +9,10 @@ metadata:
     argocd.argoproj.io/sync-options: "SkipDryRunOnMissingResource=true"
   name: cluster
 spec:
+{{- if .Values.registriesTrustedCerts }}
   additionalTrustedCA:
     name: {{ .Values.registriesCertsConfigMap }}
+{{- end }}
   registrySources: 
     allowedRegistries:
       # Default registries are required by OpenShift - DO NOT CHANGE

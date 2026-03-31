@@ -8,7 +8,7 @@ Installs the cert-manager Operator for Red Hat OpenShift.
 - package: `openshift-cert-manager-operator`
 - source: `redhat-operators`
 - channel: `stable-v1`
-- install plan approval: `Automatic`
+- install plan approval: `Manual`
 
 ## Notes
 

@@ -13,6 +13,7 @@ The defaults focus on the controller and give you a safer starting point:
 - `stable-2.6` operator channel
 - `Manual` install plan approval so operator upgrades are explicitly controlled
 - controller enabled, hub and EDA disabled by default
+- controller auto-upgrade disabled by default
 - resource requests and limits set for API, Redis, database, web, and task pods
 - managed database storage requested
 - `RECEPTOR_KUBE_SUPPORT_RECONNECT=enabled` set for controller execution environments, following Red Hat guidance for minimizing downtime during OpenShift upgrades

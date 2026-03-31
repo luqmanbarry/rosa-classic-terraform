@@ -16,5 +16,7 @@ spec:
   name: {{ .Values.operators.tempo.name }}
   source: {{ .Values.operators.tempo.source }}
   sourceNamespace: {{ .Values.operators.tempo.sourceNamespace }}
+{{- with .Values.operators.tempo.config }}
   config:
-    {{ toYaml .Values.operators.tempo.config }}
+{{ toYaml . | indent 4 }}
+{{- end }}

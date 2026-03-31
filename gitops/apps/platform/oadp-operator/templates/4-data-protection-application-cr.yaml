@@ -1,3 +1,5 @@
+{{- $bucketName := required "storage.bucketName is required for oadp-operator" .Values.storage.bucketName }}
+{{- $bucketPrefix := required "storage.bucketPrefix is required for oadp-operator" .Values.storage.bucketPrefix }}
 ---
 apiVersion: oadp.openshift.io/v1alpha1
 kind: DataProtectionApplication
@@ -58,8 +60,8 @@ spec:
           key: {{ .Values.veleroSecretKeyFile }}
           name: {{ .Values.storage.credentialsSecretName | lower }}
         objectStorage:
-          bucket: {{ .Values.storage.bucketName }}
-          prefix: {{ .Values.storage.bucketPrefix }}
+          bucket: {{ $bucketName }}
+          prefix: {{ $bucketPrefix }}
   snapshotLocations:
     - name: "default"
       velero:

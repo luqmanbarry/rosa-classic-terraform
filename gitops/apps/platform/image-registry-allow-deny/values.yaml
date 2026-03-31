@@ -1,15 +1,13 @@
 secretStoreName: platform-secrets
-pullSecretSecretName: changeme # Secret content should be json formatted
+pullSecretSecretName: ""
 resourceNamePrefix: 'day2-gitops'
-patchSchedule: "*/5 * * * *" # Use a short schedule while validating; move to daily in steady state.
+patchSchedule: "0 2 * * *"
 ocpVersion: v4.15
 
-clusterName: "changeme"
+clusterName: ""
 
 registriesTrustedCerts: # Provide list of registry host and secret name
-  - registryHost: hostname.example.com
-    templateKey: registry_0
-    caSecretName: changeme
+  []
 
 registriesCertsConfigMap: registries-config-certs
 # REGISTRIES ARE BLOCKED BY DEFAULT - ADD REGISTRY/IMAGE TO UNBLOCK
